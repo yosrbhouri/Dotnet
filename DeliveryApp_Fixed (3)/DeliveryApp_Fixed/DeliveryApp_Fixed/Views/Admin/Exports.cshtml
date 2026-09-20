@@ -1,0 +1,60 @@
+﻿@{
+    ViewData["Title"] = "Rapports & Exports";
+}
+
+<div class="breadcrumb">
+    <a href="/Admin/Index"><i class="fa-solid fa-house"></i></a>
+    <span>/</span>
+    Rapports & Exports
+</div>
+
+<h1 style="margin-bottom:24px">📊 Rapports & Exports</h1>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px">
+
+    <div class="card" style="padding:24px">
+        <h3 style="color:var(--primary);margin-bottom:8px"><i class="fa-solid fa-box"></i> Liste des Colis</h3>
+        <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:16px">Exporter tous les colis avec clients et livreurs assignés.</p>
+        <div style="display:flex;gap:10px">
+            <a href="/Export/ColisPdf" class="btn btn-primary">
+                <i class="fa-solid fa-file-pdf"></i> PDF
+            </a>
+            <a href="/Export/ColisExcel" class="btn btn-secondary">
+                <i class="fa-solid fa-file-excel"></i> Excel
+            </a>
+        </div>
+    </div>
+
+    <div class="card" style="padding:24px">
+        <h3 style="color:var(--primary);margin-bottom:8px"><i class="fa-solid fa-calendar"></i> Rapport Mensuel</h3>
+        <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:16px">Rapport PDF du mois sélectionné avec statistiques.</p>
+        <form action="/Export/RapportMensuelPdf" method="get" style="display:flex;gap:8px;flex-wrap:wrap">
+            <select name="mois" class="form-control" style="width:130px">
+                @for (int m = 1; m <= 12; m++)
+        {
+                <option value="@m" selected="@(m == DateTime.Now.Month)">
+                    @(new DateTime(2000, m, 1).ToString("MMMM"))
+                </option>
+        }
+            </select>
+            <select name="annee" class="form-control" style="width:90px">
+                @for (int a = DateTime.Now.Year; a >= DateTime.Now.Year - 3; a--)
+        {
+                <option value="@a">@a</option>
+        }
+            </select>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-file-pdf"></i> Générer
+            </button>
+        </form>
+    </div>
+
+    <div class="card" style="padding:24px">
+        <h3 style="color:var(--primary);margin-bottom:8px"><i class="fa-solid fa-truck"></i> CA par Livreur</h3>
+        <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:16px">Chiffre d'affaires et performance de chaque livreur.</p>
+        <a href="/Export/CaLivreurExcel" class="btn btn-secondary">
+            <i class="fa-solid fa-file-excel"></i> Excel
+        </a>
+    </div>
+
+</div>

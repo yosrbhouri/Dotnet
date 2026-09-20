@@ -1,0 +1,85 @@
+@model IEnumerable<DeliveryApp.Models.Livreur>
+@{
+    ViewData["Title"] = "Gestion des Livreurs";
+}
+
+<div class="breadcrumb">
+  <a href="/Admin/Index"><i class="fa-solid fa-gauge-high"></i></a>
+  <span>/</span> Livreurs
+</div>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
+  <div>
+    <h1>Livreurs</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem">@Model.Count() livreurs enregistrés</p>
+  </div>
+  <a href="/Admin/CreateLivreur" class="btn btn-primary">
+    <i class="fa-solid fa-plus"></i> Nouveau Livreur
+  </a>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Raison Sociale</th><th>CIN</th><th>Ville</th><th>Véhicules</th><th>Colis assignés</th><th style="text-align:right">Actions</th></tr>
+      </thead>
+      <tbody>
+        @foreach (var l in Model)
+        {
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:34px;height:34px;background:rgba(45,212,160,0.12);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--success);font-weight:700;font-size:0.85rem;flex-shrink:0">
+                  @l.RaisonSociale.Substring(0,1).ToUpper()
+                </div>
+                <div>
+                  <div style="font-weight:600">@l.RaisonSociale</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted)">@l.CodePostal</div>
+                </div>
+              </div>
+            </td>
+            <td style="font-family:monospace;font-size:0.85rem">@l.CIN</td>
+            <td>@l.Ville</td>
+            <td>
+              @if (l.Vehicules.Any())
+              {
+                @foreach (var v in l.Vehicules)
+                {
+                  <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">
+                    <span style="font-size:0.9rem">@(v is DeliveryApp.Models.Camion ? "🚛" : "🚗")</span>
+                    <span style="font-size:0.82rem;font-weight:500">@v.Marque</span>
+                    <span style="font-size:0.72rem;color:var(--text-muted);font-family:monospace">@v.Matricule</span>
+                  </div>
+                }
+              }
+              else
+              {
+                <span style="color:var(--text-muted);font-size:0.82rem">Aucun véhicule</span>
+              }
+            </td>
+            <td>
+              <span style="background:rgba(45,212,160,0.12);color:var(--success);padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:600">
+                @l.Colis.Count()
+              </span>
+            </td>
+            <td>
+              <div style="display:flex;justify-content:flex-end;gap:6px">
+                <a href="/Admin/EditLivreur/@l.Id" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen"></i></a>
+                <form asp-action="DeleteLivreur" method="post" style="display:inline" onsubmit="return confirm('Supprimer ce livreur ?')">
+                  @Html.AntiForgeryToken()
+                  <input type="hidden" name="id" value="@l.Id" />
+                  <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    @if (!Model.Any())
+    {
+      <div class="empty-state"><div class="empty-icon">🚴</div><p>Aucun livreur enregistré.</p></div>
+    }
+  </div>
+</div>

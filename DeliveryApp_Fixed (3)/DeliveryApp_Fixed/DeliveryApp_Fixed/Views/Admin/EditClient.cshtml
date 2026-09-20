@@ -1,0 +1,50 @@
+@model DeliveryApp.Models.Client
+@{
+    ViewData["Title"] = "Modifier Client";
+}
+<div class="breadcrumb">
+  <a href="/Admin/Clients">Clients</a><span>/</span> Modifier
+</div>
+<div style="max-width:600px">
+  <h1 style="margin-bottom:22px">Modifier Client — @Model.Nom @Model.Prenom</h1>
+  <div class="card">
+    <div class="card-body">
+      <form asp-action="EditClient" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Nom</label>
+            <input asp-for="Nom" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Prénom</label>
+            <input asp-for="Prenom" class="form-control" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input asp-for="Email" class="form-control" type="email" />
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Téléphone</label>
+            <input asp-for="Telephone" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ville</label>
+            <input asp-for="Ville" class="form-control" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Code Postal</label>
+          <input asp-for="CodePostal" class="form-control" style="max-width:160px" />
+        </div>
+        <div style="display:flex;gap:12px;margin-top:8px">
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Enregistrer</button>
+          <a href="/Admin/Clients" class="btn btn-secondary">Annuler</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

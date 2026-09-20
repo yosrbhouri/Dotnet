@@ -1,0 +1,117 @@
+@model Colis
+@{
+    var isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? "Modifier le Colis" : "Nouveau Colis";
+}
+
+<div class="breadcrumb">
+  <a href="/Home/Index"><i class="fa-solid fa-house"></i></a>
+  <span>/</span>
+  <a href="/Colis/Index">Colis</a>
+  <span>/</span>
+  @(isEdit ? "Modifier" : "Créer")
+</div>
+
+<div style="max-width:700px">
+  <h1 style="margin-bottom:6px">@(isEdit ? "Modifier le Colis #" + Model.Id : "Nouveau Colis")</h1>
+  <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:24px">
+    @(isEdit ? "Mettez à jour les informations du colis." : "Remplissez les informations pour créer un nouveau colis.")
+  </p>
+
+  <div class="card">
+    <div class="card-body">
+      <form asp-action="@(isEdit?"Edit":"Create")" asp-controller="Colis" method="post">
+        @Html.AntiForgeryToken()
+        @if (isEdit) { <input type="hidden" asp-for="Id" /> }
+
+        @if (ViewBag.IsClient == true)
+        {
+          <!-- Client connecté : ClientId auto-set, choisir uniquement le livreur -->
+          <input type="hidden" asp-for="ClientId" />
+          <div class="form-group">
+            <label class="form-label">Livreur</label>
+            <select asp-for="LivreurId" asp-items="ViewBag.Livreurs" class="form-control">
+              <option value="">— Choisir un livreur —</option>
+            </select>
+          </div>
+        }
+        else
+        {
+          <!-- Admin (Edit) : afficher les deux -->
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Client <span style="color:var(--danger)">*</span></label>
+              <select asp-for="ClientId" asp-items="ViewBag.Clients" class="form-control">
+                <option value="">— Sélectionner un client —</option>
+              </select>
+              <span asp-validation-for="ClientId" style="color:var(--danger);font-size:0.78rem"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Livreur</label>
+              <select asp-for="LivreurId" asp-items="ViewBag.Livreurs" class="form-control">
+                <option value="">— Non assigné —</option>
+              </select>
+            </div>
+          </div>
+        }
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input asp-for="Description" class="form-control" placeholder="Ex: Documents importants, fragile..." />
+          <span asp-validation-for="Description" style="color:var(--danger);font-size:0.78rem"></span>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label class="form-label">Montant (DT) <span style="color:var(--danger)">*</span></label>
+            <input asp-for="Montant" class="form-control" type="number" step="0.01" placeholder="0.00" />
+            <span asp-validation-for="Montant" style="color:var(--danger);font-size:0.78rem"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Poids (kg) <span style="color:var(--danger)">*</span></label>
+            <input asp-for="Poids" class="form-control" type="number" step="0.001" placeholder="0.000" />
+            <span asp-validation-for="Poids" style="color:var(--danger);font-size:0.78rem"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Volume (m³) <span style="color:var(--danger)">*</span></label>
+            <input asp-for="Volume" class="form-control" type="number" step="0.001" placeholder="0.000" />
+            <span asp-validation-for="Volume" style="color:var(--danger);font-size:0.78rem"></span>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Date de Livraison <span style="color:var(--danger)">*</span></label>
+            <input asp-for="DateLivraison" class="form-control" type="datetime-local" />
+            <span asp-validation-for="DateLivraison" style="color:var(--danger);font-size:0.78rem"></span>
+          </div>
+
+          @if (ViewBag.IsClient == true)
+          {
+            <!-- Client : statut forcé à EnAttente automatiquement -->
+            <input type="hidden" asp-for="Statut" value="EnAttente" />
+          }
+          else
+          {
+            <!-- Admin (Edit) : peut changer le statut -->
+            <div class="form-group">
+              <label class="form-label">Statut</label>
+              <select asp-for="Statut" class="form-control"
+                      asp-items="Html.GetEnumSelectList<StatutColis>()"></select>
+            </div>
+          }
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:8px">
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-@(isEdit?"floppy-disk":"plus")"></i>
+            @(isEdit ? "Enregistrer" : "Créer le colis")
+          </button>
+          <a href="/Colis/Index" class="btn btn-secondary">
+            <i class="fa-solid fa-xmark"></i> Annuler
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

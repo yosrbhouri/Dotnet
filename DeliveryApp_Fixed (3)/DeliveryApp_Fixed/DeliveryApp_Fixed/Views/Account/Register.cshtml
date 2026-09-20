@@ -1,0 +1,166 @@
+@model RegisterViewModel
+@using DeliveryApp.Models
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Inscription";
+}
+
+<div class="auth-bg">
+  <div class="auth-card" style="max-width:520px">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🚚</div>
+      <div>
+        <div class="gradient-text" style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.3rem;">DeliveryApp</div>
+        <div style="font-size:0.72rem;color:var(--text-soft);letter-spacing:1.5px;text-transform:uppercase;font-weight:600;">Créer un compte</div>
+      </div>
+    </div>
+
+    <h2 class="auth-heading">Inscription</h2>
+    <p class="auth-subheading">Créez votre compte pour commencer.</p>
+
+    <form asp-action="Register" asp-controller="Account" method="post" style="margin-top:24px">
+      @Html.AntiForgeryToken()
+
+      <!-- Type de compte -->
+      <div class="form-group" style="margin-bottom:20px">
+        <label class="form-label"><i class="fa-solid fa-id-badge" style="margin-right:6px;color:var(--primary)"></i>Type de compte</label>
+        <div style="display:flex;gap:12px;margin-top:8px">
+          <label id="btnClient" onclick="selectType('Client')" style="flex:1;display:flex;align-items:center;gap:10px;padding:14px 16px;border:2px solid var(--border,#e5e7eb);border-radius:12px;cursor:pointer;transition:all .2s;background:var(--bg-card,#fff)">
+            <input type="radio" asp-for="TypeUtilisateur" value="@UserType.Client" style="display:none" id="radioClient" />
+            <div style="width:38px;height:38px;border-radius:10px;background:rgba(59,130,246,0.1);display:flex;align-items:center;justify-content:center">
+              <i class="fa-solid fa-box" style="color:var(--primary);font-size:1rem"></i>
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:0.9rem">Client</div>
+              <div style="font-size:0.72rem;color:var(--text-muted)">Envoyer des colis</div>
+            </div>
+          </label>
+          <label id="btnLivreur" onclick="selectType('Livreur')" style="flex:1;display:flex;align-items:center;gap:10px;padding:14px 16px;border:2px solid var(--border,#e5e7eb);border-radius:12px;cursor:pointer;transition:all .2s;background:var(--bg-card,#fff)">
+            <input type="radio" asp-for="TypeUtilisateur" value="@UserType.Livreur" style="display:none" id="radioLivreur" />
+            <div style="width:38px;height:38px;border-radius:10px;background:rgba(16,185,129,0.1);display:flex;align-items:center;justify-content:center">
+              <i class="fa-solid fa-truck" style="color:#10b981;font-size:1rem"></i>
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:0.9rem">Livreur</div>
+              <div style="font-size:0.72rem;color:var(--text-muted)">Livrer des colis</div>
+            </div>
+          </label>
+        </div>
+        <span asp-validation-for="TypeUtilisateur" style="color:var(--danger);font-size:0.78rem;margin-top:4px;display:block"></span>
+      </div>
+
+      <!-- Infos de base -->
+      <div class="form-group">
+        <label class="form-label"><i class="fa-solid fa-user" style="margin-right:6px;color:var(--primary)"></i>Nom complet</label>
+        <input asp-for="FullName" class="form-control" placeholder="Mohamed Ben Ali" />
+        <span asp-validation-for="FullName" style="color:var(--danger);font-size:0.78rem;margin-top:4px;display:block"></span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><i class="fa-solid fa-envelope" style="margin-right:6px;color:var(--primary)"></i>Adresse Email</label>
+        <input asp-for="Email" class="form-control" placeholder="email@exemple.tn" />
+        <span asp-validation-for="Email" style="color:var(--danger);font-size:0.78rem;margin-top:4px;display:block"></span>
+      </div>
+
+      <!-- Champs Client uniquement -->
+      <div id="clientFields" style="display:none">
+        <div class="form-group">
+          <label class="form-label"><i class="fa-solid fa-phone" style="margin-right:6px;color:var(--primary)"></i>Téléphone</label>
+          <input asp-for="Telephone" class="form-control" placeholder="20 123 456" />
+        </div>
+      </div>
+
+      <!-- Champs Livreur uniquement -->
+      <div id="livreurFields" style="display:none">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label"><i class="fa-solid fa-id-card" style="margin-right:6px;color:#10b981"></i>CIN</label>
+            <input asp-for="CIN" class="form-control" placeholder="12345678" />
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fa-solid fa-building" style="margin-right:6px;color:#10b981"></i>Raison Sociale</label>
+            <input asp-for="RaisonSociale" class="form-control" placeholder="Express Livraison SARL" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Champs communs (Ville + Code Postal) -->
+      <div id="sharedFields" style="display:none">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label"><i class="fa-solid fa-city" style="margin-right:6px;color:var(--primary)"></i>Ville</label>
+            <input asp-for="Ville" class="form-control" placeholder="Tunis" />
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fa-solid fa-location-dot" style="margin-right:6px;color:var(--primary)"></i>Code Postal</label>
+            <input asp-for="CodePostal" class="form-control" placeholder="1000" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Mot de passe -->
+      <div class="form-grid" style="margin-top:4px">
+        <div class="form-group">
+          <label class="form-label"><i class="fa-solid fa-lock" style="margin-right:6px;color:var(--primary)"></i>Mot de passe</label>
+          <input asp-for="Password" class="form-control" placeholder="Min. 6 caractères" />
+          <span asp-validation-for="Password" style="color:var(--danger);font-size:0.78rem;margin-top:4px;display:block"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><i class="fa-solid fa-lock" style="margin-right:6px;color:var(--primary)"></i>Confirmer</label>
+          <input asp-for="ConfirmPassword" class="form-control" placeholder="Répétez le mot de passe" />
+          <span asp-validation-for="ConfirmPassword" style="color:var(--danger);font-size:0.78rem;margin-top:4px;display:block"></span>
+        </div>
+      </div>
+
+      <div asp-validation-summary="All" style="color:var(--danger);font-size:0.82rem;margin-bottom:12px"></div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:0.95rem;margin-top:6px">
+        <i class="fa-solid fa-user-plus"></i> Créer mon compte
+      </button>
+
+      <div style="text-align:center;margin-top:20px;font-size:0.875rem;color:var(--text-muted)">
+        Vous avez déjà un compte ?
+        <a asp-action="Login" asp-controller="Account" style="color:var(--primary);font-weight:600">Se connecter</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function selectType(type) {
+  const clientFields = document.getElementById('clientFields');
+  const livreurFields = document.getElementById('livreurFields');
+  const sharedFields = document.getElementById('sharedFields');
+  const btnClient = document.getElementById('btnClient');
+  const btnLivreur = document.getElementById('btnLivreur');
+
+  // Reset styles
+  btnClient.style.borderColor = 'var(--border,#e5e7eb)';
+  btnClient.style.background = 'var(--bg-card,#fff)';
+  btnLivreur.style.borderColor = 'var(--border,#e5e7eb)';
+  btnLivreur.style.background = 'var(--bg-card,#fff)';
+
+  // Toujours afficher les champs communs
+  sharedFields.style.display = 'block';
+
+  if (type === 'Client') {
+    document.getElementById('radioClient').checked = true;
+    btnClient.style.borderColor = 'var(--primary,#3b82f6)';
+    btnClient.style.background = 'rgba(59,130,246,0.04)';
+    clientFields.style.display = 'block';
+    livreurFields.style.display = 'none';
+  } else {
+    document.getElementById('radioLivreur').checked = true;
+    btnLivreur.style.borderColor = '#10b981';
+    btnLivreur.style.background = 'rgba(16,185,129,0.04)';
+    clientFields.style.display = 'none';
+    livreurFields.style.display = 'block';
+  }
+}
+
+// Restore selection on validation error
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.getElementById('radioClient').checked) selectType('Client');
+  else if (document.getElementById('radioLivreur').checked) selectType('Livreur');
+});
+</script>

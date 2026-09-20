@@ -1,0 +1,188 @@
+@model IEnumerable<DeliveryApp.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Gestion des Utilisateurs";
+    var userRoles = ViewBag.UserRoles as Dictionary<string, IList<string>>;
+}
+
+<div class="breadcrumb">
+  <a href="/Admin/Index"><i class="fa-solid fa-gauge-high"></i></a>
+  <span>/</span> Utilisateurs
+</div>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
+  <div>
+    <h1>Utilisateurs</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem">@Model.Count() utilisateurs inscrits</p>
+  </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+  <div class="alert alert-success" style="margin-bottom:16px"><i class="fa-solid fa-circle-check"></i> @TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+  <div class="alert alert-danger" style="margin-bottom:16px"><i class="fa-solid fa-circle-exclamation"></i> @TempData["Error"]</div>
+}
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th>Date inscription</th><th>Statut</th><th style="text-align:right">Actions</th></tr>
+      </thead>
+      <tbody>
+        @foreach (var u in Model)
+        {
+          var roles = userRoles?.GetValueOrDefault(u.Id) ?? new List<string>();
+          var isAdmin = roles.Contains("Admin");
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px">
+                @if (!string.IsNullOrEmpty(u.ProfilePicturePath))
+                {
+                  <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid @(isAdmin?"var(--primary-light)":"rgba(77,171,247,0.12)")">
+                    <img src="@u.ProfilePicturePath" alt="avatar" style="width:100%;height:100%;object-fit:cover" />
+                  </div>
+                }
+                else
+                {
+                  <div style="width:36px;height:36px;background:@(isAdmin ? "var(--primary-light)" : "rgba(77,171,247,0.12)");border-radius:50%;display:flex;align-items:center;justify-content:center;color:@(isAdmin?"var(--primary)":"var(--info)");font-weight:700;font-size:0.85rem;flex-shrink:0">
+                    @((u.FullName ?? u.Email ?? "U").Substring(0,1).ToUpper())
+                  </div>
+                }
+                <div>
+                  <div style="font-weight:600;font-size:0.9rem">@(u.FullName ?? "—")</div>
+                  <div style="font-size:0.73rem;color:var(--text-muted)">ID: @u.Id.Substring(0,8)...</div>
+                </div>
+              </div>
+            </td>
+            <td style="font-size:0.85rem">@u.Email</td>
+            <td>
+              @foreach (var r in roles)
+              {
+                <span class="badge @(r=="Admin"?"badge-warning":"badge-info")" style="margin-right:4px">@r</span>
+              }
+            </td>
+            <td style="font-size:0.82rem;color:var(--text-muted)">@u.DateInscription.ToString("dd/MM/yyyy")</td>
+            <td>
+              @if (u.IsActive)
+              {
+                <span class="badge badge-success">Actif</span>
+              }
+              else
+              {
+                <span class="badge badge-danger">Inactif</span>
+              }
+            </td>
+            <td>
+              <div style="display:flex;justify-content:flex-end;gap:6px">
+                @* Compte Admin : aucune action affichée (protégé côté serveur) *@
+                @if (!isAdmin)
+                {
+                  <button type="button"
+                          class="btn @(u.IsActive?"btn-danger":"btn-success") btn-sm"
+                          onclick="openConfirmModal('toggle', '@u.Id', '@(u.FullName ?? u.Email)', @(u.IsActive ? "true" : "false"))">
+                    @(u.IsActive ? "Désactiver" : "Activer")
+                  </button>
+                  <button type="button"
+                          class="btn btn-danger btn-sm"
+                          title="Supprimer"
+                          onclick="openConfirmModal('delete', '@u.Id', '@(u.FullName ?? u.Email)', false)">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                }
+                else
+                {
+                  <span style="color:var(--text-muted);font-size:0.8rem">—</span>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    @if (!Model.Any())
+    {
+      <div class="empty-state"><div class="empty-icon">👤</div><p>Aucun utilisateur.</p></div>
+    }
+  </div>
+</div>
+
+<!-- ── Modal de confirmation par mot de passe ──────────────────────── -->
+<div id="confirmModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;animation:fadeIn 0.2s">
+  <div style="background:var(--surface,#fff);border-radius:16px;padding:28px;max-width:440px;width:92%;box-shadow:0 25px 50px rgba(0,0,0,0.25)">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <div id="modalIcon" style="width:46px;height:46px;border-radius:50%;background:var(--danger-light,#fee2e2);color:var(--danger,#ef4444);display:flex;align-items:center;justify-content:center;font-size:1.2rem">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <div>
+        <h3 id="modalTitle" style="margin:0;font-size:1.1rem">Confirmation requise</h3>
+        <p id="modalSubtitle" style="margin:2px 0 0 0;font-size:0.82rem;color:var(--text-muted)"></p>
+      </div>
+    </div>
+
+    <p style="font-size:0.88rem;line-height:1.55;margin-bottom:16px">
+      Pour des raisons de sécurité, veuillez saisir <strong>votre mot de passe actuel</strong> pour confirmer cette action.
+    </p>
+
+    <form id="confirmForm" method="post" action="">
+      @Html.AntiForgeryToken()
+      <input type="hidden" name="userId" id="modalUserId" />
+
+      <label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:6px">Mot de passe</label>
+      <input type="password" name="currentPassword" required autocomplete="current-password"
+             placeholder="••••••••"
+             style="width:100%;padding:10px 14px;border:1px solid var(--border,#e5e7eb);border-radius:10px;font-size:0.9rem;margin-bottom:18px"
+             autofocus />
+
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button type="button" onclick="closeConfirmModal()" class="btn btn-secondary">Annuler</button>
+        <button type="submit" id="modalSubmitBtn" class="btn btn-danger">
+          <i class="fa-solid fa-check"></i> Confirmer
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+@section Scripts {
+<script>
+  function openConfirmModal(action, userId, userName, isActive) {
+    const modal = document.getElementById('confirmModal');
+    const form = document.getElementById('confirmForm');
+    const subtitle = document.getElementById('modalSubtitle');
+    const submitBtn = document.getElementById('modalSubmitBtn');
+    document.getElementById('modalUserId').value = userId;
+
+    if (action === 'delete') {
+      form.action = '/Admin/DeleteUser';
+      subtitle.textContent = `Supprimer définitivement « ${userName} »`;
+      submitBtn.innerHTML = '<i class="fa-solid fa-trash"></i> Supprimer';
+      submitBtn.className = 'btn btn-danger';
+    } else {
+      form.action = '/Admin/ToggleUserStatus';
+      const verb = isActive ? 'Désactiver' : 'Activer';
+      subtitle.textContent = `${verb} le compte « ${userName} »`;
+      submitBtn.innerHTML = `<i class="fa-solid fa-check"></i> ${verb}`;
+      submitBtn.className = isActive ? 'btn btn-danger' : 'btn btn-success';
+    }
+
+    modal.style.display = 'flex';
+    setTimeout(() => modal.querySelector('input[type=password]').focus(), 50);
+  }
+
+  function closeConfirmModal() {
+    document.getElementById('confirmModal').style.display = 'none';
+    document.querySelector('#confirmForm input[type=password]').value = '';
+  }
+
+  document.getElementById('confirmModal').addEventListener('click', function (e) {
+    if (e.target === this) closeConfirmModal();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeConfirmModal();
+  });
+</script>
+}

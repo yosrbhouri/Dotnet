@@ -1,0 +1,103 @@
+@model ColisSearchViewModel
+@{
+    ViewData["Title"] = "Recherche de Colis";
+}
+
+<div class="breadcrumb">
+  <a href="/Home/Index"><i class="fa-solid fa-house"></i></a>
+  <span>/</span>
+  <a href="/Colis/Index">Colis</a>
+  <span>/</span>
+  Recherche
+</div>
+
+<h1 style="margin-bottom:22px">Recherche de Colis</h1>
+
+<form asp-action="Search" method="get">
+  <div class="search-bar">
+    <div class="form-group" style="flex:2;min-width:200px">
+      <label class="form-label"><i class="fa-solid fa-file-lines" style="color:var(--primary);margin-right:5px"></i>Description</label>
+      <input name="description" value="@Model.Description" class="form-control" placeholder="Ex: documents, électronique..." />
+    </div>
+    <div class="form-group">
+      <label class="form-label"><i class="fa-solid fa-coins" style="color:var(--primary);margin-right:5px"></i>Montant min (DT)</label>
+      <input name="minMontant" value="@Model.MinMontant" type="number" step="0.01" class="form-control" placeholder="0.00" />
+    </div>
+    <div class="form-group">
+      <label class="form-label"><i class="fa-solid fa-coins" style="color:var(--primary);margin-right:5px"></i>Montant max (DT)</label>
+      <input name="maxMontant" value="@Model.MaxMontant" type="number" step="0.01" class="form-control" placeholder="9999.99" />
+    </div>
+    <div class="form-group">
+      <label class="form-label"><i class="fa-solid fa-filter" style="color:var(--primary);margin-right:5px"></i>Statut</label>
+      <select name="statut" class="form-control">
+        <option value="">Tous les statuts</option>
+        @foreach (var s in Enum.GetValues<StatutColis>())
+        {
+          <option value="@s" selected="@(Model.Statut == s)">@s</option>
+        }
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end;padding-bottom:0">
+      <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-magnifying-glass"></i> Rechercher
+      </button>
+      <a href="/Colis/Search" class="btn btn-secondary">
+        <i class="fa-solid fa-rotate-left"></i>
+      </a>
+    </div>
+  </div>
+</form>
+
+@if (Model.Resultats.Any())
+{
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <p style="color:var(--text-muted);font-size:0.875rem">
+      <i class="fa-solid fa-circle-check" style="color:var(--success)"></i>
+      <strong>@Model.Resultats.Count()</strong> résultat(s) trouvé(s)
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Description</th><th>Client</th><th>Montant</th><th>Poids</th><th>Statut</th><th>Date Livraison</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var c in Model.Resultats)
+          {
+            var (cls, lbl) = c.Statut switch {
+              StatutColis.EnAttente => ("badge-warning", "En attente"),
+              StatutColis.EnCours   => ("badge-info",    "En cours"),
+              StatutColis.Livré     => ("badge-success", "Livré"),
+              _                     => ("badge-danger",  "Annulé")
+            };
+            <tr>
+              <td><span style="color:var(--text-muted);font-family:monospace">#@c.Id</span></td>
+              <td>@(c.Description ?? "—")</td>
+              <td>@(c.Client != null ? $"{c.Client.Nom} {c.Client.Prenom}" : "—")</td>
+              <td style="color:var(--primary);font-weight:700">@c.Montant.ToString("N2") DT</td>
+              <td style="color:var(--text-muted)">@c.Poids kg</td>
+              <td><span class="badge @cls">@lbl</span></td>
+              <td style="font-size:0.82rem">@c.DateLivraison.ToString("dd/MM/yyyy")</td>
+              <td>
+                <a href="/Colis/Details/@c.Id" class="btn btn-secondary btn-sm">
+                  <i class="fa-solid fa-eye"></i>
+                </a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+else if (Context.Request.Query.Count > 0)
+{
+  <div class="empty-state">
+    <div class="empty-icon">🔍</div>
+    <p>Aucun colis ne correspond à vos critères de recherche.</p>
+  </div>
+}

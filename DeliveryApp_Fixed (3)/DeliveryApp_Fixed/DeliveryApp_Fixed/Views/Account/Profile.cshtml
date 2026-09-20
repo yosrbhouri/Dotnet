@@ -1,0 +1,126 @@
+@model DeliveryApp.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Mon Profil";
+}
+
+<div class="breadcrumb">
+  <a href="/Home/Index"><i class="fa-solid fa-house"></i></a>
+  <span>/</span> Mon Profil
+</div>
+
+<div style="max-width:700px;margin:0 auto">
+  <h1 style="margin-bottom:6px">Mon Profil</h1>
+  <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:24px">Gérez vos informations personnelles et votre photo de profil.</p>
+
+  @if (TempData["Success"] != null)
+  {
+    <div class="alert alert-success" style="margin-bottom:16px"><i class="fa-solid fa-circle-check"></i> @TempData["Success"]</div>
+  }
+  @if (TempData["Error"] != null)
+  {
+    <div class="alert alert-danger" style="margin-bottom:16px"><i class="fa-solid fa-circle-exclamation"></i> @TempData["Error"]</div>
+  }
+
+  <div class="card">
+    <div class="card-body">
+      <form asp-action="Profile" asp-controller="Account" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <!-- Photo de profil actuelle -->
+        <div style="display:flex;align-items:center;gap:20px;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border,#e5e7eb)">
+          <div id="avatarPreview" style="width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid var(--primary-light,#dbeafe);display:flex;align-items:center;justify-content:center;background:var(--primary-light,#dbeafe);flex-shrink:0;position:relative">
+            @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
+            {
+              <img id="previewImg" src="@Model.ProfilePicturePath" alt="Photo de profil" style="width:100%;height:100%;object-fit:cover" />
+            }
+            else
+            {
+              <span id="previewInitial" style="font-size:2.2rem;font-weight:800;color:var(--primary,#3b82f6)">
+                @((Model.FullName ?? Model.Email ?? "U").Substring(0,1).ToUpper())
+              </span>
+              <img id="previewImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;position:absolute;inset:0" />
+            }
+          </div>
+          <div>
+            <label for="profilePicture" class="btn btn-primary" style="cursor:pointer;margin-bottom:8px">
+              <i class="fa-solid fa-camera"></i> Changer la photo
+            </label>
+            <input type="file" id="profilePicture" name="profilePicture" accept=".jpg,.jpeg,.png"
+                   style="display:none" onchange="previewImage(this)" />
+            <div style="font-size:0.78rem;color:var(--text-muted)">JPG ou PNG, max 2 Mo</div>
+
+            @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
+            {
+              <form asp-action="RemoveProfilePicture" asp-controller="Account" method="post" style="display:inline;margin-top:6px">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-danger btn-sm" style="margin-top:6px"
+                        onclick="return confirm('Supprimer votre photo de profil ?')">
+                  <i class="fa-solid fa-trash"></i> Supprimer
+                </button>
+              </form>
+            }
+          </div>
+        </div>
+
+        <!-- Informations personnelles -->
+        <div style="display:grid;gap:16px">
+          <div class="form-group">
+            <label class="form-label">Nom complet</label>
+            <input type="text" name="fullName" value="@Model.FullName" class="form-control"
+                   placeholder="Votre nom complet" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" value="@Model.Email" class="form-control" disabled
+                   style="opacity:0.7;cursor:not-allowed" />
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px">L'email ne peut pas être modifié.</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date d'inscription</label>
+            <input type="text" value="@Model.DateInscription.ToString("dd/MM/yyyy")" class="form-control" disabled
+                   style="opacity:0.7;cursor:not-allowed" />
+          </div>
+        </div>
+
+        <div style="margin-top:24px;display:flex;gap:10px">
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-check"></i> Enregistrer
+          </button>
+          <a href="/Home/Index" class="btn btn-secondary">Annuler</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+<script>
+  function previewImage(input) {
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const maxSize = 2 * 1024 * 1024;
+
+      if (!['image/jpeg', 'image/png'].includes(file.type)) {
+        alert('Format non supporté. Utilisez JPG ou PNG.');
+        input.value = '';
+        return;
+      }
+      if (file.size > maxSize) {
+        alert('L\'image ne doit pas dépasser 2 Mo.');
+        input.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = document.getElementById('previewImg');
+        const initial = document.getElementById('previewInitial');
+        img.src = e.target.result;
+        img.style.display = 'block';
+        if (initial) initial.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+</script>
+}

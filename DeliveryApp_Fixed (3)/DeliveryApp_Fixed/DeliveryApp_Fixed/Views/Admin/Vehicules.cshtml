@@ -1,0 +1,109 @@
+@model IEnumerable<DeliveryApp.Models.Vehicule>
+@{
+    ViewData["Title"] = "Gestion des Véhicules";
+}
+
+<div class="breadcrumb">
+  <a href="/Admin/Index"><i class="fa-solid fa-gauge-high"></i></a>
+  <span>/</span> Véhicules
+</div>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
+  <div>
+    <h1>Véhicules</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem">
+      @Model.Count(v => v is DeliveryApp.Models.Camion) camion(s) •
+      @Model.Count(v => v is DeliveryApp.Models.Voiture) voiture(s)
+    </p>
+  </div>
+  <a href="/Admin/CreateVehicule" class="btn btn-primary">
+    <i class="fa-solid fa-plus"></i> Nouveau Véhicule
+  </a>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+  @foreach (var v in Model)
+  {
+    var isCamion = v is DeliveryApp.Models.Camion;
+    var camion = v as DeliveryApp.Models.Camion;
+    var voiture = v as DeliveryApp.Models.Voiture;
+    <div class="card" style="border-top:3px solid @(isCamion ? "var(--warning)" : "var(--info)")">
+      <div class="card-body">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <div style="font-size:2.2rem">@(isCamion ? "🚛" : "🚗")</div>
+          <div>
+            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:1.05rem">@v.Marque</div>
+            <div style="font-family:monospace;color:var(--text-muted);font-size:0.82rem">@v.Matricule</div>
+          </div>
+          <span class="badge @(isCamion?"badge-warning":"badge-info")" style="margin-left:auto">
+            @(isCamion ? "Camion" : "Voiture")
+          </span>
+        </div>
+
+        <!-- Entreprise propriétaire -->
+        <div style="margin-bottom:12px;padding:8px 10px;background:rgba(99,102,241,0.06);border-radius:8px">
+          <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px">Entreprise</div>
+          @if (v.Livreur != null)
+          {
+            <div style="font-size:0.88rem;font-weight:600;margin-top:2px;color:var(--primary)">@v.Livreur.RaisonSociale</div>
+          }
+          else
+          {
+            <div style="font-size:0.82rem;color:var(--text-muted);margin-top:2px;font-style:italic">Non assigné</div>
+          }
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+          <div>
+            <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px">Couleur</div>
+            <div style="font-size:0.88rem;font-weight:500;margin-top:2px">@v.Couleur</div>
+          </div>
+          <div>
+            <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px">Vitesse max</div>
+            <div style="font-size:0.88rem;font-weight:500;margin-top:2px">@v.VitesseLimite km/h</div>
+          </div>
+          @if (isCamion && camion != null)
+          {
+            <div>
+              <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px">Capacité</div>
+              <div style="font-size:0.88rem;font-weight:500;margin-top:2px">@camion.Capacite kg</div>
+            </div>
+            <div>
+              <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px">Essieux</div>
+              <div style="font-size:0.88rem;font-weight:500;margin-top:2px">@camion.NbrEssieux</div>
+            </div>
+          }
+          @if (!isCamion && voiture != null)
+          {
+            <div>
+              <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px">Places</div>
+              <div style="font-size:0.88rem;font-weight:500;margin-top:2px">@voiture.NbrPlaces</div>
+            </div>
+          }
+        </div>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <a href="/Admin/EditVehicule/@v.Id" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-pen"></i> Modifier
+          </a>
+          <form asp-action="DeleteVehicule" method="post" onsubmit="return confirm('Supprimer ce véhicule ?')">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@v.Id" />
+            <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i> Supprimer</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+@if (!Model.Any())
+{
+  <div class="empty-state card" style="padding:50px">
+    <div class="empty-icon">🚚</div>
+    <p>Aucun véhicule enregistré.</p>
+    <a href="/Admin/CreateVehicule" class="btn btn-primary" style="margin-top:14px">
+      <i class="fa-solid fa-plus"></i> Ajouter un véhicule
+    </a>
+  </div>
+}

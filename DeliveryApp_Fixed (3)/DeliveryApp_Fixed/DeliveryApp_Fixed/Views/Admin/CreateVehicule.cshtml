@@ -1,0 +1,113 @@
+@{
+    ViewData["Title"] = "Nouveau Véhicule";
+    var livreurs = ViewBag.Livreurs as IEnumerable<DeliveryApp.Models.Livreur> ?? Enumerable.Empty<DeliveryApp.Models.Livreur>();
+}
+
+<div class="breadcrumb">
+  <a href="/Admin/Vehicules">Véhicules</a><span>/</span> Créer
+</div>
+
+<div style="max-width:600px">
+  <h1 style="margin-bottom:22px">Nouveau Véhicule</h1>
+
+  @if (TempData["Error"] != null)
+  {
+    <div style="background:rgba(239,68,68,0.1);color:var(--danger);padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:0.88rem;font-weight:500">
+      <i class="fa-solid fa-circle-exclamation"></i> @TempData["Error"]
+    </div>
+  }
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-body">
+      <div style="display:flex;gap:12px;margin-bottom:20px">
+        <button type="button" id="btnCamion" onclick="setType('Camion')"
+                class="btn btn-primary" style="flex:1;justify-content:center">
+          🚛 Camion
+        </button>
+        <button type="button" id="btnVoiture" onclick="setType('Voiture')"
+                class="btn btn-secondary" style="flex:1;justify-content:center">
+          🚗 Voiture
+        </button>
+      </div>
+
+      <form asp-action="CreateVehicule" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="type" id="typeInput" value="Camion" />
+
+        <!-- Entreprise propriétaire -->
+        <div class="form-group">
+          <label class="form-label">Entreprise (Livreur) <span style="color:var(--danger)">*</span></label>
+          <select name="livreurId" class="form-control">
+            <option value="">— Aucune entreprise —</option>
+            @foreach (var l in livreurs)
+            {
+              <option value="@l.Id">@l.RaisonSociale — @l.Ville</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Marque <span style="color:var(--danger)">*</span></label>
+            <input name="marque" class="form-control" placeholder="Mercedes, Peugeot..." required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Couleur <span style="color:var(--danger)">*</span></label>
+            <input name="couleur" class="form-control" placeholder="Blanc, Rouge..." required />
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Matricule <span style="color:var(--danger)">*</span></label>
+            <input name="matricule" class="form-control" placeholder="TN-123-AB" required />
+            <span style="color:var(--text-muted);font-size:0.72rem">Doit être unique dans toute la base</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vitesse Limite (km/h) <span style="color:var(--danger)">*</span></label>
+            <input name="vitesseLimite" type="number" class="form-control" placeholder="90" min="50" max="300" required />
+          </div>
+        </div>
+
+        <!-- Champs Camion -->
+        <div id="camionFields">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Capacité (kg) <span style="color:var(--danger)">*</span></label>
+              <input name="capacite" type="number" class="form-control" placeholder="5000" min="1" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nombre d'essieux <span style="color:var(--danger)">*</span></label>
+              <input name="nbrEssieux" type="number" class="form-control" placeholder="2" min="1" max="10" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Champs Voiture -->
+        <div id="voitureFields" style="display:none">
+          <div class="form-group">
+            <label class="form-label">Nombre de places <span style="color:var(--danger)">*</span></label>
+            <input name="nbrPlaces" type="number" class="form-control" placeholder="5" min="2" max="9" style="max-width:160px" />
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:8px">
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Créer</button>
+          <a href="/Admin/Vehicules" class="btn btn-secondary">Annuler</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function setType(type) {
+  document.getElementById('typeInput').value = type;
+  document.getElementById('camionFields').style.display = type === 'Camion' ? 'block' : 'none';
+  document.getElementById('voitureFields').style.display = type === 'Voiture' ? 'block' : 'none';
+  document.getElementById('btnCamion').className = 'btn ' + (type==='Camion' ? 'btn-primary' : 'btn-secondary') + ' flex-1 justify-center';
+  document.getElementById('btnVoiture').className = 'btn ' + (type==='Voiture' ? 'btn-primary' : 'btn-secondary') + ' flex-1 justify-center';
+  document.getElementById('btnCamion').style.background = type==='Camion' ? 'var(--primary)' : '';
+  document.getElementById('btnVoiture').style.background = type==='Voiture' ? 'var(--primary)' : '';
+}
+</script>

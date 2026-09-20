@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — DeliveryApp</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+</head>
+<body>
+    <div class="app-wrapper">
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">🚚</div>
+                <div>
+                    <div class="logo-text">DeliveryApp</div>
+                    <div class="logo-sub">Gestion Livraisons</div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Principal</div>
+
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString()=="Home"?"active":"")"
+                   href="/Home/Index">
+                    <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>
+                    Tableau de bord
+                </a>
+
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString()=="Colis"?"active":"")"
+                   href="/Colis/Index">
+                    <span class="nav-icon"><i class="fa-solid fa-box"></i></span>
+                    Colis
+                </a>
+
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString()=="Search"?"active":"")"
+                   href="/Colis/Search">
+                    <span class="nav-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    Recherche
+                </a>
+
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString()=="Planning"?"active":"")"
+                   href="/Planning/Index">
+                    <span class="nav-icon"><i class="fa-solid fa-calendar-days"></i></span>
+                    Planning
+                </a>
+
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString()=="Notification"?"active":"")"
+                   href="/Notification/Index" style="position:relative">
+                    <span class="nav-icon"><i class="fa-solid fa-bell"></i></span>
+                    Notifications
+                    <span id="sidebar-notif-badge" class="notif-badge" style="display:none;position:absolute;right:14px;top:50%;transform:translateY(-50%);background:#ef4444;color:#fff;border-radius:10px;padding:2px 7px;font-size:11px;font-weight:700;">0</span>
+                </a>
+
+                @if (User.IsInRole("Admin"))
+      {
+                <div class="nav-section-title" style="margin-top:8px">Administration</div>
+
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString()=="Admin"&&ViewContext.RouteData.Values["action"]?.ToString()=="Index"?"active":"")"
+                   href="/Admin/Index">
+                    <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span>
+                    Statistiques
+                </a>
+
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString()=="Clients"?"active":"")"
+                   href="/Admin/Clients">
+                    <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+                    Clients
+                </a>
+
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString()=="Livreurs"?"active":"")"
+                   href="/Admin/Livreurs">
+                    <span class="nav-icon"><i class="fa-solid fa-person-biking"></i></span>
+                    Livreurs
+                </a>
+
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString()=="Vehicules"?"active":"")"
+                   href="/Admin/Vehicules">
+                    <span class="nav-icon"><i class="fa-solid fa-truck"></i></span>
+                    Véhicules
+                </a>
+
+                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString()=="Export"?"active":"")"
+                   href="/Export/Exports">
+                    <span class="nav-icon"><i class="fa-solid fa-chart-bar"></i></span>
+                    Rapports &amp; Exports
+                </a>
+
+                <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString()=="Users"?"active":"")"
+                   href="/Admin/Users">
+                    <span class="nav-icon"><i class="fa-solid fa-user-shield"></i></span>
+                    Utilisateurs
+                </a>
+      }
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="/Account/Profile" class="user-card" style="text-decoration:none;color:inherit;">
+                    @{
+                        var profilePic = ViewBag.CurrentUserProfilePic as string;
+                    }
+                    @if (!string.IsNullOrEmpty(profilePic))
+                    {
+                        <div class="user-avatar" style="padding:0;overflow:hidden">
+                            <img src="@profilePic" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="user-avatar">@(User.Identity?.Name?.Substring(0,1).ToUpper() ?? "U")</div>
+                    }
+                    <div>
+                        <div class="user-name">@User.Identity?.Name</div>
+                        <div class="user-role">@(User.IsInRole("Admin") ? "Administrateur" : (ViewBag.CurrentUserType as string ?? "Utilisateur"))</div>
+                    </div>
+                </a>
+                <form asp-controller="Account" asp-action="Logout" method="post" style="margin-top:10px">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-secondary" style="width:100%;justify-content:center;">
+                        <i class="fa-solid fa-right-from-bracket"></i> Déconnexion
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <div class="main-content">
+            <header class="topbar">
+                <button class="btn btn-secondary btn-sm" id="menuToggle" style="display:none">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <span class="topbar-title">@ViewData["Title"]</span>
+                <div class="topbar-actions" style="display:flex;align-items:center;gap:14px;">
+                    @if (TempData["Success"] != null)
+        {
+                    <div class="alert alert-success" style="margin:0;padding:8px 14px">
+                        <i class="fa-solid fa-circle-check"></i> @TempData["Success"]
+                    </div>
+        }
+
+                    @if (User.Identity?.IsAuthenticated == true)
+        {
+                    <div class="notif-bell-wrapper" style="position:relative;">
+                        <button id="notifBellBtn" type="button" style="background:#f1f5f9;border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center;color:#334155;font-size:17px;">
+                            <i class="fa-solid fa-bell"></i>
+                            <span id="notifBellBadge" style="display:none;position:absolute;top:-2px;right:-2px;background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;border:2px solid #fff;">0</span>
+                        </button>
+
+                        <div id="notifDropdown" style="display:none;position:absolute;right:0;top:48px;width:360px;max-height:460px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.12);z-index:1000;overflow:hidden;">
+                            <div style="padding:12px 16px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;">
+                                <strong style="color:#0f172a"><i class="fa-solid fa-bell"></i> Notifications</strong>
+                                <button id="markAllReadBtn" type="button" style="background:transparent;border:none;color:#3b82f6;font-size:12px;cursor:pointer;font-weight:600;">Tout marquer lu</button>
+                            </div>
+                            <div id="notifDropdownList" style="max-height:340px;overflow-y:auto;">
+                                <div style="padding:24px;text-align:center;color:#94a3b8;font-size:13px;">Chargement…</div>
+                            </div>
+                            <a href="/Notification/Index" style="display:block;padding:10px;text-align:center;background:#f8fafc;border-top:1px solid #f1f5f9;color:#3b82f6;text-decoration:none;font-size:13px;font-weight:600;">Voir toutes les notifications</a>
+                        </div>
+                    </div>
+        }
+                </div>
+            </header>
+
+            <main class="page-content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const toggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        if (toggle) toggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+        if (window.innerWidth <= 900 && toggle) toggle.style.display = 'flex';
+
+        // ─── Système de notifications ───────────────────────────────────────
+        (function () {
+            const bellBtn = document.getElementById('notifBellBtn');
+            if (!bellBtn) return;
+            const bellBadge = document.getElementById('notifBellBadge');
+            const sidebarBadge = document.getElementById('sidebar-notif-badge');
+            const dropdown = document.getElementById('notifDropdown');
+            const listEl = document.getElementById('notifDropdownList');
+            const markAllBtn = document.getElementById('markAllReadBtn');
+
+            const csrfToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            function typeColor(type) {
+                switch (type) {
+                    case 'Success': return { bg: '#dcfce7', color: '#15803d', icon: 'fa-circle-check' };
+                    case 'Warning': return { bg: '#fef3c7', color: '#b45309', icon: 'fa-triangle-exclamation' };
+                    case 'Danger': return { bg: '#fee2e2', color: '#b91c1c', icon: 'fa-circle-exclamation' };
+                    default: return { bg: '#dbeafe', color: '#1e40af', icon: 'fa-circle-info' };
+                }
+            }
+
+            function renderList(items) {
+                if (!items || items.length === 0) {
+                    listEl.innerHTML = '<div style="padding:30px;text-align:center;color:#94a3b8;font-size:13px;"><i class="fa-regular fa-bell-slash" style="font-size:28px;display:block;margin-bottom:8px;"></i>Aucune notification</div>';
+                    return;
+                }
+                listEl.innerHTML = items.map(n => {
+                    const t = typeColor(n.type);
+                    const bg = n.isRead ? '#fff' : '#f8fafc';
+                    return `
+                        <a href="${n.link || '/Notification/Index'}" data-id="${n.id}" class="notif-drop-item" style="display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid #f1f5f9;text-decoration:none;color:inherit;background:${bg};">
+                            <div style="width:34px;height:34px;border-radius:50%;background:${t.bg};color:${t.color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa-solid ${t.icon}"></i>
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <div style="font-weight:600;color:#0f172a;font-size:13px;${n.isRead ? '' : ''}">${n.title}</div>
+                                <div style="color:#64748b;font-size:12px;margin:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${n.message}</div>
+                                <div style="color:#94a3b8;font-size:11px;">${n.timeAgo}</div>
+                            </div>
+                            ${n.isRead ? '' : '<span style="width:8px;height:8px;border-radius:50%;background:#3b82f6;flex-shrink:0;margin-top:6px;"></span>'}
+                        </a>`;
+                }).join('');
+
+                // Clic → marquer comme lu avant de naviguer
+                listEl.querySelectorAll('.notif-drop-item').forEach(a => {
+                    a.addEventListener('click', async (e) => {
+                        const id = a.getAttribute('data-id');
+                        try {
+                            await fetch('/Notification/MarkAsRead?id=' + id, {
+                                method: 'POST',
+                                headers: { 'RequestVerificationToken': csrfToken }
+                            });
+                        } catch { }
+                    });
+                });
+            }
+
+            async function loadRecent() {
+                try {
+                    const res = await fetch('/Notification/Recent');
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    updateBadge(data.unread);
+                    renderList(data.items || []);
+                } catch { }
+            }
+
+            async function loadUnread() {
+                try {
+                    const res = await fetch('/Notification/UnreadCount');
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    updateBadge(data.count);
+                } catch { }
+            }
+
+            function updateBadge(count) {
+                const show = count && count > 0;
+                [bellBadge, sidebarBadge].forEach(b => {
+                    if (!b) return;
+                    b.style.display = show ? 'inline-block' : 'none';
+                    b.textContent = count > 99 ? '99+' : count;
+                });
+            }
+
+            bellBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = dropdown.style.display === 'block';
+                dropdown.style.display = isOpen ? 'none' : 'block';
+                if (!isOpen) loadRecent();
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!dropdown.contains(e.target) && !bellBtn.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+
+            if (markAllBtn) {
+                markAllBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    try {
+                        await fetch('/Notification/MarkAllAsRead', {
+                            method: 'POST',
+                            headers: { 'RequestVerificationToken': csrfToken }
+                        });
+                        await loadRecent();
+                    } catch { }
+                });
+            }
+
+            // Chargement initial
+            loadUnread();
+
+            // ─── SignalR temps réel ─────────────────────────────────────────
+            if (window.signalR) {
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl("/hubs/notifications")
+                    .withAutomaticReconnect()
+                    .build();
+
+                connection.on("ReceiveNotification", (n) => {
+                    // Mettre à jour le badge immédiatement
+                    updateBadge(n.unread);
+
+                    // Si le dropdown est ouvert, recharger la liste
+                    if (dropdown.style.display === 'block') {
+                        loadRecent();
+                    }
+
+                    // Toast visuel
+                    showToast(n);
+
+                    // Son (optionnel, bip court)
+                    try { playDing(); } catch { }
+                });
+
+                connection.start()
+                    .then(() => console.log("[Notifications] SignalR connecté"))
+                    .catch(err => {
+                        console.warn("[Notifications] SignalR échec, fallback polling:", err);
+                        setInterval(loadUnread, 15000);
+                    });
+            } else {
+                // Fallback : polling toutes les 15s si la lib SignalR n'est pas chargée
+                setInterval(loadUnread, 15000);
+            }
+
+            // ─── Toast ──────────────────────────────────────────────────────
+            function showToast(n) {
+                let container = document.getElementById('notifToastContainer');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'notifToastContainer';
+                    container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;max-width:360px;';
+                    document.body.appendChild(container);
+                }
+                const t = typeColor(n.type);
+                const toast = document.createElement('div');
+                toast.style.cssText = `background:#fff;border:1px solid #e5e7eb;border-left:4px solid ${t.color};border-radius:10px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,0.12);display:flex;gap:12px;cursor:pointer;animation:slideIn .3s ease;`;
+                toast.innerHTML = `
+                    <div style="width:36px;height:36px;border-radius:50%;background:${t.bg};color:${t.color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="fa-solid ${t.icon}"></i>
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:600;color:#0f172a;font-size:14px;">${n.title}</div>
+                        <div style="color:#64748b;font-size:12px;margin-top:2px;">${n.message}</div>
+                    </div>
+                    <button style="background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:16px;">&times;</button>`;
+
+                const close = () => { toast.style.opacity = '0'; toast.style.transform = 'translateX(20px)'; setTimeout(() => toast.remove(), 250); };
+                toast.querySelector('button').addEventListener('click', (e) => { e.stopPropagation(); close(); });
+                toast.addEventListener('click', () => { if (n.link) window.location.href = n.link; });
+                toast.style.transition = 'all .25s ease';
+                container.appendChild(toast);
+                setTimeout(close, 6000);
+            }
+
+            function playDing() {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.connect(g); g.connect(ctx.destination);
+                o.type = 'sine'; o.frequency.value = 880;
+                g.gain.setValueAtTime(0.05, ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+                o.start(); o.stop(ctx.currentTime + 0.3);
+            }
+        })();
+    </script>
+    @Html.AntiForgeryToken()
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

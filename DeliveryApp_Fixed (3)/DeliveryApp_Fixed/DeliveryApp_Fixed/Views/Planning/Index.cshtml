@@ -1,0 +1,929 @@
+﻿@using DeliveryApp.Models
+@{
+    ViewData["Title"] = "Planning des Livraisons";
+    var livreurs = ViewBag.Livreurs as IEnumerable<Livreur> ?? Enumerable.Empty<Livreur>();
+}
+
+<!-- ── Hero Header ── -->
+<div class="planning-hero">
+    <div class="planning-hero-bg"></div>
+    <div class="planning-hero-content">
+        <div class="planning-hero-left">
+            <div class="planning-hero-badge">
+                <i class="fa-solid fa-calendar-days"></i> Planning
+            </div>
+            <h1 class="planning-hero-title">Planning des Livraisons</h1>
+            <p class="planning-hero-sub">Glissez-déposez pour replanifier &middot; Cliquez pour affecter un livreur</p>
+        </div>
+        <a href="/Colis/Create" class="btn btn-primary planning-hero-btn">
+            <i class="fa-solid fa-plus"></i> Nouveau Colis
+        </a>
+    </div>
+</div>
+
+<!-- ── Mini Stat Cards ── -->
+<div class="planning-stats-row">
+    <div class="planning-stat-card planning-stat-total">
+        <div class="planning-stat-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+        <div>
+            <div class="planning-stat-value" id="s-total">—</div>
+            <div class="planning-stat-label">Total</div>
+        </div>
+    </div>
+    <div class="planning-stat-card planning-stat-attente">
+        <div class="planning-stat-icon"><i class="fa-solid fa-clock"></i></div>
+        <div>
+            <div class="planning-stat-value" id="s-attente">—</div>
+            <div class="planning-stat-label">En attente</div>
+        </div>
+    </div>
+    <div class="planning-stat-card planning-stat-cours">
+        <div class="planning-stat-icon"><i class="fa-solid fa-truck-fast"></i></div>
+        <div>
+            <div class="planning-stat-value" id="s-cours">—</div>
+            <div class="planning-stat-label">En cours</div>
+        </div>
+    </div>
+    <div class="planning-stat-card planning-stat-livres">
+        <div class="planning-stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <div>
+            <div class="planning-stat-value" id="s-livres">—</div>
+            <div class="planning-stat-label">Livr&eacute;s</div>
+        </div>
+    </div>
+    <div class="planning-stat-card planning-stat-ca">
+        <div class="planning-stat-icon"><i class="fa-solid fa-coins"></i></div>
+        <div>
+            <div class="planning-stat-value" id="s-ca">—</div>
+            <div class="planning-stat-label">CA du jour</div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Légende statuts ── -->
+<div class="planning-legend">
+    <div class="planning-legend-pills">
+        <span class="planning-legend-pill" style="--pill-color:#f59e0b;--pill-bg:#fef3c7">
+            <span class="planning-legend-dot"></span> En attente
+        </span>
+        <span class="planning-legend-pill" style="--pill-color:#3b82f6;--pill-bg:#dbeafe">
+            <span class="planning-legend-dot"></span> En cours
+        </span>
+        <span class="planning-legend-pill" style="--pill-color:#10b981;--pill-bg:#d1fae5">
+            <span class="planning-legend-dot"></span> Livr&eacute;
+        </span>
+        <span class="planning-legend-pill" style="--pill-color:#ef4444;--pill-bg:#fee2e2">
+            <span class="planning-legend-dot"></span> Annul&eacute;
+        </span>
+    </div>
+    <div class="planning-legend-help">
+        <span><i class="fa-solid fa-hand-pointer"></i> Clic = d&eacute;tails</span>
+        <span><i class="fa-solid fa-arrows-up-down-left-right"></i> Glisser = replanifier</span>
+    </div>
+</div>
+
+<!-- ── Layout principal : Sidebar + Calendrier ── -->
+<div class="planning-grid">
+
+    <!-- Sidebar -->
+    <aside class="planning-sidebar">
+        <div class="planning-sidebar-section">
+            <div class="planning-sidebar-title">
+                <i class="fa-solid fa-filter"></i> Filtrer par livreur
+            </div>
+            <div class="planning-filter-list" id="livreurFilters">
+                <label class="planning-filter-item active">
+                    <input type="checkbox" value="0" checked onchange="filterCalendar()">
+                    <span class="planning-filter-check"></span>
+                    <span class="planning-filter-name">Tous</span>
+                </label>
+                <label class="planning-filter-item">
+                    <input type="checkbox" value="-1" checked onchange="filterCalendar()">
+                    <span class="planning-filter-check"></span>
+                    <i class="fa-solid fa-circle-question" style="color:var(--text-soft);font-size:0.8rem"></i>
+                    <span class="planning-filter-name" style="color:var(--text-soft)">Non assign&eacute;</span>
+                </label>
+                @foreach (var l in livreurs)
+                {
+                    <label class="planning-filter-item">
+                        <input type="checkbox" value="@l.Id" checked onchange="filterCalendar()">
+                        <span class="planning-filter-check"></span>
+                        <i class="fa-solid fa-truck-fast" style="color:var(--primary);font-size:0.75rem"></i>
+                        <span class="planning-filter-name">@l.RaisonSociale</span>
+                    </label>
+                }
+            </div>
+        </div>
+    </aside>
+
+    <!-- Calendrier -->
+    <div class="planning-calendar-wrap">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+<!-- ── Modal Détail / Affectation ── -->
+<div id="modalOverlay" class="planning-modal-overlay" onclick="closeModal(event)">
+    <div class="planning-modal" onclick="event.stopPropagation()">
+        <div class="planning-modal-header">
+            <div class="planning-modal-header-icon">
+                <i class="fa-solid fa-box"></i>
+            </div>
+            <h3 id="modalTitle" class="planning-modal-title"></h3>
+            <button onclick="closeModal()" class="planning-modal-close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="planning-modal-grid">
+            <div class="planning-modal-cell">
+                <div class="planning-modal-cell-icon"><i class="fa-solid fa-user"></i></div>
+                <div>
+                    <div class="planning-modal-cell-label">Client</div>
+                    <div class="planning-modal-cell-value" id="m-client"></div>
+                </div>
+            </div>
+            <div class="planning-modal-cell">
+                <div class="planning-modal-cell-icon" style="background:var(--info-light);color:var(--info)"><i class="fa-solid fa-calendar"></i></div>
+                <div>
+                    <div class="planning-modal-cell-label">Date livraison</div>
+                    <div class="planning-modal-cell-value" id="m-date"></div>
+                </div>
+            </div>
+            <div class="planning-modal-cell">
+                <div class="planning-modal-cell-icon" style="background:var(--success-light);color:var(--success)"><i class="fa-solid fa-coins"></i></div>
+                <div>
+                    <div class="planning-modal-cell-label">Montant</div>
+                    <div class="planning-modal-cell-value" id="m-montant" style="color:var(--primary);font-weight:700"></div>
+                </div>
+            </div>
+            <div class="planning-modal-cell">
+                <div class="planning-modal-cell-icon" style="background:var(--warning-light);color:var(--warning)"><i class="fa-solid fa-weight-hanging"></i></div>
+                <div>
+                    <div class="planning-modal-cell-label">Poids</div>
+                    <div class="planning-modal-cell-value" id="m-poids"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="planning-modal-desc">
+            <div class="planning-modal-cell-label" style="margin-bottom:6px">Description</div>
+            <div id="m-description" style="font-size:0.875rem;color:var(--text);line-height:1.6"></div>
+        </div>
+
+        <div class="planning-modal-section">
+            <label class="planning-modal-section-title">
+                <i class="fa-solid fa-truck-fast"></i> Affecter un livreur
+            </label>
+            <div style="display:flex;gap:8px">
+                <select id="m-livreur" class="form-control" style="flex:1">
+                    <option value="0">— Non assign&eacute; —</option>
+                    @foreach (var l in livreurs)
+                    {
+                        <option value="@l.Id">@l.RaisonSociale</option>
+                    }
+                </select>
+                <button onclick="assignLivreur()" class="btn btn-primary" style="padding:0 16px">
+                    <i class="fa-solid fa-check"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="planning-modal-section">
+            <label class="planning-modal-section-title">
+                <i class="fa-solid fa-tag"></i> Changer le statut
+            </label>
+            <div class="planning-modal-statuts">
+                <button onclick="changeStatut('EnAttente')" class="planning-statut-btn planning-statut-attente">
+                    <i class="fa-solid fa-clock"></i> En attente
+                </button>
+                <button onclick="changeStatut('EnCours')" class="planning-statut-btn planning-statut-cours">
+                    <i class="fa-solid fa-truck"></i> En cours
+                </button>
+                <button onclick="changeStatut('Livré')" class="planning-statut-btn planning-statut-livre">
+                    <i class="fa-solid fa-check"></i> Livr&eacute;
+                </button>
+                <button onclick="changeStatut('Annulé')" class="planning-statut-btn planning-statut-annule">
+                    <i class="fa-solid fa-ban"></i> Annul&eacute;
+                </button>
+            </div>
+        </div>
+
+        <div class="planning-modal-footer">
+            <a id="m-edit-link" href="#" class="btn btn-secondary">
+                <i class="fa-solid fa-pen"></i> Modifier
+            </a>
+            <button onclick="closeModal()" class="btn btn-primary">Fermer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="planning-toast">
+    <i id="toast-icon" class="fa-solid fa-circle-check"></i>
+    <span id="toast-msg"></span>
+</div>
+
+@section Scripts {
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/locales/fr.global.min.js"></script>
+
+    <style>
+        /* ═══ PLANNING HERO ═══ */
+        .planning-hero {
+            position: relative;
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            margin-bottom: 24px;
+            padding: 32px 36px;
+            animation: fadeUp .5s ease both;
+        }
+        .planning-hero-bg {
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed, #a855f7);
+            z-index: 0;
+        }
+        .planning-hero-bg::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.12) 0%, transparent 60%),
+                        radial-gradient(circle at 85% 20%, rgba(255,255,255,0.08) 0%, transparent 50%);
+        }
+        .planning-hero-bg::after {
+            content: '';
+            position: absolute; right: -40px; top: -40px;
+            width: 220px; height: 220px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            animation: float 6s ease-in-out infinite;
+        }
+        .planning-hero-content {
+            position: relative; z-index: 1;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 16px;
+        }
+        .planning-hero-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(8px);
+            color: rgba(255,255,255,0.9);
+            font-size: 0.72rem; font-weight: 600;
+            padding: 5px 14px;
+            border-radius: 20px;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .planning-hero-title {
+            color: #fff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.55rem; font-weight: 800;
+            margin: 0 0 4px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .planning-hero-sub {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.85rem; margin: 0;
+        }
+        .planning-hero-btn {
+            background: rgba(255,255,255,0.18) !important;
+            border: 1px solid rgba(255,255,255,0.25) !important;
+            color: #fff !important;
+            backdrop-filter: blur(8px);
+            font-weight: 600;
+            transition: all .2s ease;
+        }
+        .planning-hero-btn:hover {
+            background: rgba(255,255,255,0.3) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        /* ═══ MINI STATS ROW ═══ */
+        .planning-stats-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .planning-stat-card {
+            display: flex; align-items: center; gap: 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px 18px;
+            box-shadow: var(--shadow-xs);
+            transition: all var(--transition);
+            animation: fadeUp .45s ease both;
+        }
+        .planning-stat-card:nth-child(1) { animation-delay: .05s }
+        .planning-stat-card:nth-child(2) { animation-delay: .1s }
+        .planning-stat-card:nth-child(3) { animation-delay: .15s }
+        .planning-stat-card:nth-child(4) { animation-delay: .2s }
+        .planning-stat-card:nth-child(5) { animation-delay: .25s }
+        .planning-stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        .planning-stat-icon {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; flex-shrink: 0;
+        }
+        .planning-stat-total .planning-stat-icon  { background: var(--primary-light); color: var(--primary); }
+        .planning-stat-attente .planning-stat-icon { background: #fef3c7; color: #d97706; }
+        .planning-stat-cours .planning-stat-icon   { background: #dbeafe; color: #2563eb; }
+        .planning-stat-livres .planning-stat-icon  { background: #d1fae5; color: #059669; }
+        .planning-stat-ca .planning-stat-icon      { background: #fce7f3; color: #db2777; }
+        .planning-stat-value {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.2rem; font-weight: 800;
+            color: var(--text);
+            line-height: 1.1;
+        }
+        .planning-stat-label {
+            font-size: 0.72rem;
+            color: var(--text-soft);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        /* ═══ LEGEND ═══ */
+        .planning-legend {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 12px;
+            margin-bottom: 18px;
+            animation: fadeUp .5s ease .3s both;
+        }
+        .planning-legend-pills {
+            display: flex; gap: 8px; flex-wrap: wrap;
+        }
+        .planning-legend-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem; font-weight: 600;
+            background: var(--pill-bg);
+            color: var(--pill-color);
+            transition: transform .15s;
+        }
+        .planning-legend-pill:hover { transform: scale(1.05); }
+        .planning-legend-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--pill-color);
+            display: inline-block;
+            animation: pulse 2s ease infinite;
+        }
+        .planning-legend-help {
+            display: flex; gap: 16px;
+            font-size: 0.75rem; color: var(--text-soft);
+        }
+        .planning-legend-help i { margin-right: 4px; }
+
+        /* ═══ MAIN GRID ═══ */
+        .planning-grid {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 18px;
+            align-items: start;
+            animation: fadeUp .5s ease .35s both;
+        }
+
+        /* ═══ SIDEBAR ═══ */
+        .planning-sidebar {
+            position: sticky; top: 20px;
+            display: flex; flex-direction: column; gap: 0;
+        }
+        .planning-sidebar-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        .planning-sidebar-title {
+            font-size: 0.7rem;
+            color: var(--text-soft);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .planning-sidebar-title i {
+            color: var(--primary);
+            font-size: 0.75rem;
+        }
+        .planning-filter-list {
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .planning-filter-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            color: var(--text);
+            transition: all .15s ease;
+            position: relative;
+        }
+        .planning-filter-item:hover {
+            background: var(--primary-light);
+        }
+        .planning-filter-item input[type="checkbox"] {
+            display: none;
+        }
+        .planning-filter-check {
+            width: 18px; height: 18px;
+            border: 2px solid var(--border);
+            border-radius: 5px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all .2s ease;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .planning-filter-check::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 0.55rem;
+            color: white;
+            opacity: 0;
+            transform: scale(0);
+            transition: all .2s ease;
+        }
+        .planning-filter-item input:checked ~ .planning-filter-check {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        .planning-filter-item input:checked ~ .planning-filter-check::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .planning-filter-name {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ═══ CALENDAR WRAP ═══ */
+        .planning-calendar-wrap {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px 22px;
+            box-shadow: var(--shadow-sm);
+            min-height: 480px;
+        }
+
+        /* ═══ FULLCALENDAR OVERRIDES ═══ */
+        .fc { font-family: 'Inter', sans-serif; }
+        .fc-toolbar-title {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            font-size: 1.15rem !important;
+            font-weight: 700 !important;
+            color: var(--text) !important;
+        }
+        .fc-button {
+            background: var(--primary) !important;
+            border-color: var(--primary) !important;
+            border-radius: 10px !important;
+            font-size: 0.78rem !important;
+            font-weight: 500 !important;
+            padding: 6px 14px !important;
+            transition: all .2s ease !important;
+            box-shadow: 0 2px 6px rgba(79,70,229,0.2) !important;
+        }
+        .fc-button:hover {
+            background: var(--primary-hover) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(79,70,229,0.3) !important;
+        }
+        .fc-button-active {
+            background: var(--primary-hover) !important;
+            border-color: var(--primary-hover) !important;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 2px 6px rgba(79,70,229,0.2) !important;
+        }
+        .fc-daygrid-event {
+            border-radius: 8px !important;
+            padding: 3px 8px !important;
+            font-size: 0.73rem !important;
+            font-weight: 500 !important;
+            border: none !important;
+            cursor: pointer;
+            transition: transform .15s ease, box-shadow .15s ease !important;
+        }
+        .fc-daygrid-event:hover {
+            transform: scale(1.03);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+        }
+        .fc-day-today {
+            background: linear-gradient(135deg, rgba(79,70,229,0.04), rgba(124,58,237,0.04)) !important;
+        }
+        .fc-day-today .fc-daygrid-day-number {
+            background: var(--primary);
+            color: #fff;
+            border-radius: 8px;
+            padding: 2px 8px;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .fc-col-header-cell {
+            background: linear-gradient(180deg, var(--bg), var(--bg-alt)) !important;
+            font-size: 0.75rem;
+            font-weight: 600 !important;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted) !important;
+            padding: 10px 0 !important;
+        }
+        .fc-scrollgrid { border-color: var(--border) !important; }
+        .fc-scrollgrid td, .fc-scrollgrid th { border-color: var(--border-soft) !important; }
+        .fc-event-dragging {
+            opacity: .8;
+            transform: scale(1.04) rotate(1deg);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+        }
+        .fc-daygrid-day:hover {
+            background: rgba(79,70,229,0.02);
+        }
+
+        /* ═══ MODAL ═══ */
+        .planning-modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(15,23,42,0.5);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            align-items: center; justify-content: center;
+        }
+        .planning-modal-overlay[data-open="true"] {
+            animation: fadeIn .2s ease both;
+        }
+        .planning-modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 0;
+            max-width: 520px; width: 92%;
+            max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+            animation: modalSlideUp .3s ease both;
+        }
+        @@keyframes modalSlideUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.96); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .planning-modal-header {
+            display: flex; align-items: center; gap: 14px;
+            padding: 24px 28px 18px;
+            border-bottom: 1px solid var(--border-soft);
+        }
+        .planning-modal-header-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--primary), #7c3aed);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .planning-modal-title {
+            margin: 0; flex: 1;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.05rem; font-weight: 700;
+            color: var(--text);
+        }
+        .planning-modal-close {
+            width: 34px; height: 34px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            transition: all .15s ease;
+        }
+        .planning-modal-close:hover {
+            background: var(--danger-light);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        .planning-modal-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 20px 28px 0;
+        }
+        .planning-modal-cell {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 14px;
+            border: 1px solid var(--border-soft);
+        }
+        .planning-modal-cell-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; flex-shrink: 0;
+        }
+        .planning-modal-cell-label {
+            font-size: 0.65rem;
+            color: var(--text-soft);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+        }
+        .planning-modal-cell-value {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 1px;
+        }
+        .planning-modal-desc {
+            margin: 16px 28px 0;
+            padding: 14px;
+            background: var(--bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-soft);
+        }
+        .planning-modal-section {
+            padding: 0 28px;
+            margin-top: 18px;
+        }
+        .planning-modal-section-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 10px;
+        }
+        .planning-modal-section-title i {
+            color: var(--primary);
+            font-size: 0.8rem;
+        }
+        .planning-modal-statuts {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .planning-statut-btn {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 10px 14px;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.78rem; font-weight: 600;
+            transition: all .2s ease;
+        }
+        .planning-statut-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .planning-statut-attente { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+        .planning-statut-attente:hover { border-color: #f59e0b; }
+        .planning-statut-cours { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+        .planning-statut-cours:hover { border-color: #3b82f6; }
+        .planning-statut-livre { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+        .planning-statut-livre:hover { border-color: #10b981; }
+        .planning-statut-annule { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+        .planning-statut-annule:hover { border-color: #ef4444; }
+        .planning-modal-footer {
+            display: flex; gap: 10px; justify-content: flex-end;
+            padding: 20px 28px 24px;
+            margin-top: 18px;
+            border-top: 1px solid var(--border-soft);
+        }
+
+        /* ═══ TOAST ═══ */
+        .planning-toast {
+            position: fixed; bottom: 28px; right: 28px;
+            display: none;
+            align-items: center; gap: 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px 22px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+            z-index: 2000;
+            font-size: 0.875rem; font-weight: 500;
+            opacity: 0;
+            transform: translateY(16px);
+            transition: all .35s cubic-bezier(0.34,1.56,0.64,1);
+            pointer-events: none;
+        }
+        .planning-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .planning-toast i { font-size: 1.1rem; }
+
+        /* ═══ RESPONSIVE ═══ */
+        @@media (max-width: 900px) {
+            .planning-stats-row { grid-template-columns: repeat(3, 1fr); }
+            .planning-grid { grid-template-columns: 1fr; }
+            .planning-sidebar { position: static; }
+        }
+        @@media (max-width: 600px) {
+            .planning-stats-row { grid-template-columns: repeat(2, 1fr); }
+            .planning-hero { padding: 22px 20px; }
+            .planning-hero-title { font-size: 1.2rem; }
+        }
+    </style>
+
+    <script>
+        let calendar;
+        let currentColisId = null;
+        let allEvents = [];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const calEl = document.getElementById('calendar');
+
+            calendar = new FullCalendar.Calendar(calEl, {
+                locale: 'fr',
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                },
+                height: 'auto',
+                editable: true,
+                eventStartEditable: true,
+                droppable: true,
+
+                events: function (info, successCb, failureCb) {
+                    fetch(`/Planning/GetEvents?start=${info.startStr}&end=${info.endStr}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            allEvents = data;
+                            successCb(applyFilters(data));
+                        })
+                        .catch(failureCb);
+                },
+
+                eventDrop: function (info) {
+                    const newDate = info.event.startStr;
+                    fetch('/Planning/MoveEvent', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: parseInt(info.event.id), newDate: newDate })
+                    })
+                        .then(r => r.json())
+                        .then(data => {
+                            showToast(data.message + ' \u2192 ' + data.date, 'success');
+                            loadStatsJour(new Date().toISOString().split('T')[0]);
+                        })
+                        .catch(() => { info.revert(); showToast('Erreur lors du d\u00e9placement', 'error'); });
+                },
+
+                eventClick: function (info) {
+                    const p = info.event.extendedProps;
+                    currentColisId = parseInt(info.event.id);
+
+                    document.getElementById('modalTitle').textContent = info.event.title;
+                    document.getElementById('m-client').textContent = p.client;
+                    document.getElementById('m-date').textContent = formatDate(info.event.start);
+                    document.getElementById('m-montant').textContent = p.montant.toFixed(2) + ' DT';
+                    document.getElementById('m-poids').textContent = p.poids + ' kg';
+                    document.getElementById('m-description').textContent = p.description;
+                    document.getElementById('m-edit-link').href = '/Colis/Edit/' + currentColisId;
+
+                    const sel = document.getElementById('m-livreur');
+                    sel.value = p.livreurId ?? 0;
+
+                    openModal();
+                },
+
+                dateClick: function (info) {
+                    loadStatsJour(info.dateStr);
+                },
+
+                eventMouseEnter: function (info) {
+                    const p = info.event.extendedProps;
+                    info.el.title = `${p.client} \u00b7 ${p.livreur} \u00b7 ${p.statut}`;
+                }
+            });
+
+            calendar.render();
+            loadStatsJour(new Date().toISOString().split('T')[0]);
+        });
+
+        function filterCalendar() {
+            const checked = [...document.querySelectorAll('#livreurFilters input:checked')].map(i => parseInt(i.value));
+            const filtered = applyFilters(allEvents, checked);
+            calendar.removeAllEvents();
+            calendar.addEventSource(filtered);
+        }
+
+        function applyFilters(events, checked) {
+            if (!checked) {
+                checked = [...document.querySelectorAll('#livreurFilters input:checked')].map(i => parseInt(i.value));
+            }
+            if (checked.includes(0)) return events;
+            return events.filter(e => {
+                const lid = e.extendedProps?.livreurId ?? -1;
+                return checked.includes(lid);
+            });
+        }
+
+        function assignLivreur() {
+            if (!currentColisId) return;
+            const livreurId = parseInt(document.getElementById('m-livreur').value);
+            fetch('/Planning/AssignLivreur', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ colisId: currentColisId, livreurId: livreurId })
+            })
+                .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+                .then(data => {
+                    showToast(data.message + ' : ' + data.livreur, 'success');
+                    calendar.refetchEvents();
+                })
+                .catch(err => { console.error('AssignLivreur error:', err); showToast('Erreur lors de l\'affectation', 'error'); });
+        }
+
+        function changeStatut(statut) {
+            if (!currentColisId) return;
+            fetch('/Planning/ChangeStatut', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ colisId: currentColisId, statut: statut })
+            })
+                .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+                .then(data => {
+                    showToast(data.message, 'success');
+                    calendar.refetchEvents();
+                    closeModal();
+                })
+                .catch(err => { console.error('ChangeStatut error:', err); showToast('Erreur lors du changement', 'error'); });
+        }
+
+        function loadStatsJour(date) {
+            fetch(`/Planning/StatsJour?date=${date}`)
+                .then(r => r.json())
+                .then(d => {
+                    animateValue('s-total', d.total);
+                    animateValue('s-attente', d.enAttente);
+                    animateValue('s-cours', d.enCours);
+                    animateValue('s-livres', d.livres);
+                    document.getElementById('s-ca').textContent = d.ca.toFixed(2) + ' DT';
+                });
+        }
+
+        function animateValue(id, end) {
+            const el = document.getElementById(id);
+            const start = parseInt(el.textContent) || 0;
+            if (start === end) { el.textContent = end; return; }
+            const duration = 400;
+            const startTime = performance.now();
+            function tick(now) {
+                const progress = Math.min((now - startTime) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                el.textContent = Math.round(start + (end - start) * eased);
+                if (progress < 1) requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
+        }
+
+        function openModal() {
+            const overlay = document.getElementById('modalOverlay');
+            overlay.style.display = 'flex';
+            overlay.setAttribute('data-open', 'true');
+        }
+        function closeModal(e) {
+            const overlay = document.getElementById('modalOverlay');
+            if (!e || e.target === overlay) {
+                overlay.style.display = 'none';
+                overlay.removeAttribute('data-open');
+            }
+        }
+
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            document.getElementById('toast-msg').textContent = msg;
+            icon.style.color = type === 'success' ? '#10b981' : '#ef4444';
+            icon.className = type === 'success' ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark';
+            toast.style.display = 'flex';
+            toast.style.pointerEvents = 'none';
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.style.display = 'none', 350);
+            }, 3000);
+        }
+
+        function formatDate(d) {
+            if (!d) return '\u2014';
+            return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+    </script>
+}

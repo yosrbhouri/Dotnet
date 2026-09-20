@@ -1,0 +1,139 @@
+is_global = true
+build_property.TargetFramework = net8.0
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v8.0
+build_property.RootNamespace = DeliveryApp
+build_property.RootNamespace = DeliveryApp
+build_property.ProjectDir = C:\Users\ACER\Downloads\DeliveryApp_Fixed (2) (1)\DeliveryApp_Fixed (3)\DeliveryApp_Fixed\DeliveryApp_Fixed\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = true
+build_property.MSBuildProjectDirectory = C:\Users\ACER\Downloads\DeliveryApp_Fixed (2) (1)\DeliveryApp_Fixed (3)\DeliveryApp_Fixed\DeliveryApp_Fixed
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 8.0
+build_property.EnableCodeStyleSeverity = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Account/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Account/Profile.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxQcm9maWxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Account/Register.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZWdpc3Rlci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Admin/Clients.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQ2xpZW50cy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Admin/CreateClient.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQ3JlYXRlQ2xpZW50LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Admin/CreateLivreur.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQ3JlYXRlTGl2cmV1ci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Admin/CreateVehicule.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQ3JlYXRlVmVoaWN1bGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Admin/EditClient.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRWRpdENsaWVudC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Admin/EditLivreur.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRWRpdExpdnJldXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Admin/EditVehicule.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRWRpdFZlaGljdWxlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Admin/Exports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRXhwb3J0cy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Admin/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Admin/Livreurs.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cTGl2cmV1cnMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Admin/Users.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cVXNlcnMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Admin/Vehicules.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cVmVoaWN1bGVzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Colis/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29saXNcQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Colis/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29saXNcRGV0YWlscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Colis/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29saXNcRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Colis/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29saXNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Colis/Search.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ29saXNcU2VhcmNoLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Home/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Notification/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTm90aWZpY2F0aW9uXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Planning/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGxhbm5pbmdcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Shared/_AuthLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9BdXRoTGF5b3V0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ACER/Downloads/DeliveryApp_Fixed (2) (1)/DeliveryApp_Fixed (3)/DeliveryApp_Fixed/DeliveryApp_Fixed/Views/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 

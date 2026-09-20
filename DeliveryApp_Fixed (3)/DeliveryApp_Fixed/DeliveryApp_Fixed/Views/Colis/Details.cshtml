@@ -1,0 +1,177 @@
+@model Colis
+@{
+    ViewData["Title"] = "Détails du Colis #" + Model.Id;
+    var (cls, lbl) = Model.Statut switch {
+        StatutColis.EnAttente => ("badge-warning", "En attente"),
+        StatutColis.EnCours   => ("badge-info",    "En cours"),
+        StatutColis.Livré     => ("badge-success", "Livré"),
+        _                     => ("badge-danger",  "Annulé")
+    };
+}
+
+<div class="breadcrumb">
+  <a href="/Home/Index"><i class="fa-solid fa-house"></i></a>
+  <span>/</span>
+  <a href="/Colis/Index">Colis</a>
+  <span>/</span>
+  #@Model.Id
+</div>
+
+<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px">
+  <div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+      <h1>Colis <span style="color:var(--primary)">#@Model.Id</span></h1>
+      <span class="badge @cls">@lbl</span>
+    </div>
+    <p style="color:var(--text-muted);font-size:0.875rem">Créé le @Model.DateCreation.ToString("dd MMMM yyyy à HH:mm")</p>
+  </div>
+  @if (User.IsInRole("Admin"))
+  {
+    <div style="display:flex;gap:10px">
+      <a href="/Colis/Edit/@Model.Id" class="btn btn-primary">
+        <i class="fa-solid fa-pen"></i> Modifier
+      </a>
+      <form asp-action="Delete" method="post" onsubmit="return confirm('Supprimer ce colis ?')">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.Id" />
+        <button type="submit" class="btn btn-danger">
+          <i class="fa-solid fa-trash"></i> Supprimer
+        </button>
+      </form>
+    </div>
+  }
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+  <!-- Infos Colis -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fa-solid fa-box" style="color:var(--primary);margin-right:8px"></i>Informations Colis</span>
+    </div>
+    <div class="card-body">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">Description</div>
+          <div class="detail-value">@(Model.Description ?? "—")</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Statut</div>
+          <div class="detail-value"><span class="badge @cls">@lbl</span></div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Montant</div>
+          <div class="detail-value" style="color:var(--primary);font-size:1.2rem;font-weight:700">@Model.Montant.ToString("N2") DT</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Poids</div>
+          <div class="detail-value">@Model.Poids kg</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Volume</div>
+          <div class="detail-value">@Model.Volume m³</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Date de Livraison</div>
+          <div class="detail-value">@Model.DateLivraison.ToString("dd/MM/yyyy HH:mm")</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fa-solid fa-user" style="color:var(--primary);margin-right:8px"></i>Client</span>
+    </div>
+    <div class="card-body">
+      @if (Model.Client != null)
+      {
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+          <div style="width:52px;height:52px;background:var(--primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:var(--primary);font-weight:800;flex-shrink:0">
+            @Model.Client.Nom.Substring(0,1).ToUpper()
+          </div>
+          <div>
+            <div style="font-size:1.05rem;font-weight:700">@Model.Client.Nom @Model.Client.Prenom</div>
+            <div style="color:var(--text-muted);font-size:0.82rem">@Model.Client.Email</div>
+          </div>
+        </div>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-label">Ville</div>
+            <div class="detail-value">@Model.Client.Ville</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Code Postal</div>
+            <div class="detail-value">@Model.Client.CodePostal</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Téléphone</div>
+            <div class="detail-value">@(Model.Client.Telephone ?? "—")</div>
+          </div>
+        </div>
+      }
+      else { <div class="empty-state"><p>Aucun client associé</p></div> }
+    </div>
+  </div>
+
+  <!-- Livreur -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fa-solid fa-person-biking" style="color:var(--primary);margin-right:8px"></i>Livreur</span>
+    </div>
+    <div class="card-body">
+      @if (Model.Livreur != null)
+      {
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-label">Raison Sociale</div>
+            <div class="detail-value" style="font-weight:700">@Model.Livreur.RaisonSociale</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">CIN</div>
+            <div class="detail-value" style="font-family:monospace">@Model.Livreur.CIN</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Ville</div>
+            <div class="detail-value">@Model.Livreur.Ville</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Code Postal</div>
+            <div class="detail-value">@Model.Livreur.CodePostal</div>
+          </div>
+        </div>
+        @if (Model.Livreur.Vehicules != null && Model.Livreur.Vehicules.Any())
+        {
+          <div style="margin-top:14px;padding:12px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Véhicules de l'entreprise</div>
+            @foreach (var veh in Model.Livreur.Vehicules)
+            {
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                <span style="font-size:1.4rem">@(veh is Camion ? "🚛" : "🚗")</span>
+                <div>
+                  <div style="font-weight:600">@veh.Marque — @veh.Couleur</div>
+                  <div style="font-size:0.8rem;color:var(--text-muted);font-family:monospace">@veh.Matricule</div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+      else
+      {
+        <div class="empty-state" style="padding:30px">
+          <div class="empty-icon">🚴</div>
+          <p>Aucun livreur assigné</p>
+        </div>
+      }
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:20px">
+  <a href="/Colis/Index" class="btn btn-secondary">
+    <i class="fa-solid fa-arrow-left"></i> Retour à la liste
+  </a>
+</div>

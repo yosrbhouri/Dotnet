@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\DeliveryApp_Fixed (3)",
+    "\\DeliveryApp_Fixed (3)\\DeliveryApp_Fixed",
+    "\\DeliveryApp_Fixed (3)\\DeliveryApp_Fixed\\DeliveryApp_Fixed",
+    "\\DeliveryApp_Fixed (3)\\DeliveryApp_Fixed\\DeliveryApp_Fixed\\Services",
+    "\\DeliveryApp_Fixed (3)\\DeliveryApp_Fixed\\DeliveryApp_Fixed\\Views",
+    "\\DeliveryApp_Fixed (3)\\DeliveryApp_Fixed\\DeliveryApp_Fixed\\wwwroot",
+    "\\DeliveryApp_Fixed (3)\\DeliveryApp_Fixed\\DeliveryApp_Fixed\\wwwroot\\css",
+    "\\DeliveryApp_Fixed (3)\\DeliveryApp_Fixed\\DeliveryApp_Fixed\\wwwroot\\uploads",
+    "\\DeliveryApp_Fixed (3)\\DeliveryApp_Fixed\\DeliveryApp_Fixed\\wwwroot\\uploads\\profiles"
+  ],
+  "SelectedNode": "\\DeliveryApp_Fixed (3)\\DeliveryApp_Fixed\\DeliveryApp_Fixed\\Views\\Admin\\Clients.cshtml",
+  "PreviewInSolutionExplorer": false
+}

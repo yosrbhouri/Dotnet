@@ -1,0 +1,81 @@
+@model List<DeliveryApp.Models.Notification>
+@{
+    ViewData["Title"] = "Mes notifications";
+}
+
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <div>
+        <h1 style="margin:0"><i class="fa-solid fa-bell"></i> Mes notifications</h1>
+        <p style="margin:4px 0 0;color:#64748b">@Model.Count notification(s), @Model.Count(n => !n.IsRead) non lue(s)</p>
+    </div>
+    @if (Model.Any(n => !n.IsRead))
+    {
+        <form asp-action="MarkAllAsRead" method="post" style="margin:0">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-check-double"></i> Tout marquer comme lu
+            </button>
+        </form>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card" style="text-align:center;padding:60px 20px;">
+        <i class="fa-regular fa-bell-slash" style="font-size:48px;color:#cbd5e1"></i>
+        <h3 style="margin-top:16px;color:#475569">Aucune notification</h3>
+        <p style="color:#94a3b8">Vous n'avez pas encore reçu de notification.</p>
+    </div>
+}
+else
+{
+    <div class="notif-list" style="display:flex;flex-direction:column;gap:10px;">
+        @foreach (var n in Model)
+        {
+            var typeClass = n.Type switch
+            {
+                DeliveryApp.Models.NotificationType.Success => "success",
+                DeliveryApp.Models.NotificationType.Warning => "warning",
+                DeliveryApp.Models.NotificationType.Danger => "danger",
+                _ => "info"
+            };
+            var icon = n.Type switch
+            {
+                DeliveryApp.Models.NotificationType.Success => "fa-circle-check",
+                DeliveryApp.Models.NotificationType.Warning => "fa-triangle-exclamation",
+                DeliveryApp.Models.NotificationType.Danger => "fa-circle-exclamation",
+                _ => "fa-circle-info"
+            };
+            <div class="notif-item notif-@typeClass @(n.IsRead ? "read" : "unread")"
+                 style="display:flex;gap:14px;padding:16px;border-radius:10px;background:#fff;border:1px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,0.04);@(n.IsRead ? "" : "border-left:4px solid #3b82f6;")">
+                <div class="notif-icon" style="width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#eff6ff;color:#3b82f6;">
+                    <i class="fa-solid @icon" style="font-size:18px"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="display:flex;justify-content:space-between;gap:12px;">
+                        <strong style="color:#0f172a">@n.Title</strong>
+                        <small style="color:#94a3b8;white-space:nowrap">@n.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                    </div>
+                    <p style="margin:4px 0 8px;color:#475569">@n.Message</p>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        @if (!string.IsNullOrEmpty(n.Link))
+                        {
+                            <a href="@n.Link" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-right"></i> Voir</a>
+                        }
+                        @if (!n.IsRead)
+                        {
+                            <span class="badge" style="background:#dbeafe;color:#1e40af;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:600;">NOUVEAU</span>
+                        }
+                        <form asp-action="Delete" method="post" style="margin:0 0 0 auto;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@n.Id" />
+                            <button type="submit" class="btn btn-sm" style="background:transparent;color:#ef4444;border:none;" onclick="return confirm('Supprimer cette notification ?')">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

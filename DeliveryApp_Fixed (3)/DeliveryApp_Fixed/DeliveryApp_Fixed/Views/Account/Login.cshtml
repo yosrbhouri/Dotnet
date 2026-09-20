@@ -1,0 +1,81 @@
+@model LoginViewModel
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Connexion";
+}
+
+<div class="auth-bg">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🚚</div>
+      <div>
+        <div class="gradient-text" style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.3rem;">DeliveryApp</div>
+        <div style="font-size:0.72rem;color:var(--text-soft);letter-spacing:1.5px;text-transform:uppercase;font-weight:600;">Gestion Livraisons</div>
+      </div>
+    </div>
+
+    <h2 class="auth-heading">Connexion</h2>
+    <p class="auth-subheading">Bienvenue ! Connectez-vous à votre espace.</p>
+
+    @if (ViewData.ModelState.ErrorCount > 0)
+    {
+      <div class="alert alert-danger" style="margin-top:18px">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <asp-validation-summary asp-validation-summary="All"></asp-validation-summary>
+      </div>
+    }
+
+    <form asp-action="Login" asp-controller="Account" method="post" style="margin-top:24px">
+      @Html.AntiForgeryToken()
+      <input type="hidden" name="ReturnUrl" value="@ViewData["ReturnUrl"]" />
+
+      <div class="form-group">
+        <label class="form-label"><i class="fa-solid fa-envelope" style="margin-right:6px;color:var(--primary)"></i>Adresse Email</label>
+        <input asp-for="Email" class="form-control" placeholder="admin@delivery.tn" autocomplete="email" />
+        <span asp-validation-for="Email" style="color:var(--danger);font-size:0.78rem;margin-top:4px;display:block"></span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><i class="fa-solid fa-lock" style="margin-right:6px;color:var(--primary)"></i>Mot de passe</label>
+        <div style="position:relative">
+          <input asp-for="Password" class="form-control" placeholder="••••••••" id="pwdInput" style="padding-right:44px" />
+          <button type="button" onclick="togglePwd()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted)" id="eyeBtn">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+        <span asp-validation-for="Password" style="color:var(--danger);font-size:0.78rem;margin-top:4px;display:block"></span>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;cursor:pointer;color:var(--text-muted)">
+          <input asp-for="RememberMe" type="checkbox" style="accent-color:var(--primary);width:16px;height:16px" />
+          Se souvenir de moi
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:0.95rem">
+        <i class="fa-solid fa-right-to-bracket"></i> Se connecter
+      </button>
+
+      <div style="text-align:center;margin-top:22px;font-size:0.875rem;color:var(--text-muted)">
+        Pas encore de compte ?
+        <a asp-action="Register" asp-controller="Account" style="color:var(--primary);font-weight:600">S'inscrire</a>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+function togglePwd() {
+  const inp = document.getElementById('pwdInput');
+  const btn = document.getElementById('eyeBtn');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+  } else {
+    inp.type = 'password';
+    btn.innerHTML = '<i class="fa-solid fa-eye"></i>';
+  }
+}
+</script>

@@ -1,0 +1,51 @@
+@model DeliveryApp.Models.Livreur
+@{
+    ViewData["Title"] = "Modifier Livreur";
+}
+
+<div class="breadcrumb">
+  <a href="/Admin/Livreurs">Livreurs</a><span>/</span> Modifier
+</div>
+
+<div style="max-width:600px">
+  <h1 style="margin-bottom:22px">Modifier — @Model.RaisonSociale</h1>
+  <div class="card">
+    <div class="card-body">
+      <form asp-action="EditLivreur" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+
+        <div class="form-group">
+          <label class="form-label">Raison Sociale</label>
+          <input asp-for="RaisonSociale" class="form-control" />
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">CIN</label>
+            <input asp-for="CIN" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ville</label>
+            <input asp-for="Ville" class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Code Postal</label>
+          <input asp-for="CodePostal" class="form-control" style="max-width:160px" />
+        </div>
+
+        <p style="color:var(--text-muted);font-size:0.82rem;margin-top:8px">
+          <i class="fa-solid fa-circle-info"></i> Les véhicules sont gérés dans la section
+          <a href="/Admin/Vehicules" style="color:var(--primary);font-weight:500">Véhicules</a>.
+        </p>
+
+        <div style="display:flex;gap:12px;margin-top:8px">
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Enregistrer</button>
+          <a href="/Admin/Livreurs" class="btn btn-secondary">Annuler</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

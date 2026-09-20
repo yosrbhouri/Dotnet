@@ -1,0 +1,152 @@
+@model IEnumerable<Colis>
+@{
+    ViewData["Title"] = "Liste des Colis";
+    var selectedStatut = ViewBag.SelectedStatut as StatutColis?;
+}
+
+<div class="breadcrumb">
+  <a href="/Home/Index"><i class="fa-solid fa-house"></i></a>
+  <span>/</span> Colis
+</div>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px">
+  <div>
+    <h1 style="margin-bottom:4px">Gestion des Colis</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem">@Model.Count() colis @(selectedStatut.HasValue ? "filtrés" : "enregistrés")</p>
+  </div>
+  @* Bouton de création réservé aux Clients uniquement *@
+  @if (ViewBag.CurrentUserType as string == "Client")
+  {
+    <a href="/Colis/Create" class="btn btn-primary">
+      <i class="fa-solid fa-plus"></i> Nouveau Colis
+    </a>
+  }
+</div>
+
+<!-- ── Filtres par Statut ─────────────────────────────────────────── -->
+<div class="card" style="margin-bottom:18px;padding:14px 18px">
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span style="font-size:0.82rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">
+      <i class="fa-solid fa-filter"></i> Filtrer par statut :
+    </span>
+    <a href="/Colis/Index" class="btn btn-sm @(selectedStatut == null ? "btn-primary" : "btn-secondary")">
+      Tous
+    </a>
+    <a href="/Colis/Index?statut=EnAttente" class="btn btn-sm @(selectedStatut == StatutColis.EnAttente ? "btn-primary" : "btn-secondary")">
+      <i class="fa-solid fa-clock"></i> En attente
+    </a>
+    <a href="/Colis/Index?statut=EnCours" class="btn btn-sm @(selectedStatut == StatutColis.EnCours ? "btn-primary" : "btn-secondary")">
+      <i class="fa-solid fa-truck"></i> En cours
+    </a>
+    <a href="/Colis/Index?statut=Livré" class="btn btn-sm @(selectedStatut == StatutColis.Livré ? "btn-primary" : "btn-secondary")">
+      <i class="fa-solid fa-check"></i> Livré
+    </a>
+    <a href="/Colis/Index?statut=Annulé" class="btn btn-sm @(selectedStatut == StatutColis.Annulé ? "btn-primary" : "btn-secondary")">
+      <i class="fa-solid fa-ban"></i> Annulé
+    </a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Description</th>
+          <th>Client</th>
+          <th>Livreur</th>
+          <th>Montant</th>
+          <th>Poids</th>
+          <th>Date Livraison</th>
+          <th>Statut</th>
+          <th style="text-align:right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var c in Model)
+        {
+          <tr>
+            <td><span style="color:var(--text-muted);font-family:monospace;font-size:0.82rem">#@c.Id</span></td>
+            <td>
+              <strong>@(c.Description ?? "—")</strong>
+              <div style="font-size:0.75rem;color:var(--text-muted)">@c.DateCreation.ToString("dd/MM/yyyy")</div>
+            </td>
+            <td>
+              @if (c.Client != null)
+              {
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="width:30px;height:30px;background:var(--primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:var(--primary);font-weight:700;flex-shrink:0">
+                    @c.Client.Nom.Substring(0,1).ToUpper()
+                  </div>
+                  <div>
+                    <div style="font-size:0.85rem;font-weight:500">@c.Client.Nom @c.Client.Prenom</div>
+                    <div style="font-size:0.73rem;color:var(--text-muted)">@c.Client.Ville</div>
+                  </div>
+                </div>
+              }
+              else { <span style="color:var(--text-muted)">—</span> }
+            </td>
+            <td>
+              @if (c.Livreur != null)
+              {
+                <div style="font-size:0.85rem">@c.Livreur.RaisonSociale</div>
+                <div style="font-size:0.73rem;color:var(--text-muted)">@c.Livreur.Ville</div>
+              }
+              else { <span style="color:var(--text-muted)">Non assigné</span> }
+            </td>
+            <td><span style="color:var(--primary);font-weight:700">@c.Montant.ToString("N2") DT</span></td>
+            <td style="color:var(--text-muted);font-size:0.85rem">@c.Poids kg</td>
+            <td style="font-size:0.85rem">@c.DateLivraison.ToString("dd/MM/yyyy")</td>
+            <td>
+              @{
+                var (cls, lbl) = c.Statut switch {
+                  StatutColis.EnAttente => ("badge-warning", "En attente"),
+                  StatutColis.EnCours   => ("badge-info",    "En cours"),
+                  StatutColis.Livré     => ("badge-success", "Livré"),
+                  _                     => ("badge-danger",  "Annulé")
+                };
+              }
+              <span class="badge @cls">@lbl</span>
+            </td>
+            <td>
+              <div style="display:flex;justify-content:flex-end;gap:6px">
+                <a href="/Colis/Details/@c.Id" class="btn btn-secondary btn-sm" title="Détails">
+                  <i class="fa-solid fa-eye"></i>
+                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                  <a href="/Colis/Edit/@c.Id" class="btn btn-secondary btn-sm" title="Modifier">
+                    <i class="fa-solid fa-pen"></i>
+                  </a>
+                  <form asp-action="Delete" asp-controller="Colis" method="post" style="display:inline"
+                        onsubmit="return confirm('Supprimer ce colis ?')">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@c.Id" />
+                    <button type="submit" class="btn btn-danger btn-sm" title="Supprimer">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </form>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    @if (!Model.Any())
+    {
+      <div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <p>Aucun colis enregistré.</p>
+        @if (User.IsInRole("Admin"))
+        {
+          <a href="/Colis/Create" class="btn btn-primary" style="margin-top:14px">
+            <i class="fa-solid fa-plus"></i> Créer le premier colis
+          </a>
+        }
+      </div>
+    }
+  </div>
+</div>
